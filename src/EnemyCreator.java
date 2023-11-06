@@ -1,15 +1,41 @@
-import java.util.ArrayList;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.HashMap;
+import java.util.Scanner;
 
 public class EnemyCreator {
 
     String name;
     int healthPoints;
-    Object[] moves = new Object[4];
+    HashMap<String, Integer> attackMove = new HashMap<String, Integer>();
+    HashMap<String, Integer> defenceMove = new HashMap<String, Integer>();
+    HashMap<String, HashMap<String, Integer>> moveList = new HashMap<String, HashMap<String, Integer>>();
 
-    public EnemyCreator(String name, int HP, Object[] moves) {
-        this.name = name;
-        healthPoints = HP;
-        this.moves = moves;
+    public EnemyCreator() {
+        File f = new File("Enemies/enemy" + Math.random());
+        Scanner s = null;
+        try {
+            s = new Scanner(f);
+        }
+        catch (FileNotFoundException fException) {
+            System.out.println("File not found.");
+        }
+        this.name = s.nextLine();
+        this.healthPoints = Integer.parseInt(s.nextLine());
+        String line = s.nextLine();
+        String[] options = line.split(", ");
+        for (int i = 0; i < options.length; i++) {
+            String[] singleMove = options[i].split(" ");
+            attackMove.put(singleMove[0], Integer.parseInt(singleMove[1]));
+            }
+        moveList.put("Attack", attackMove);
+        line = s.nextLine();
+        options = line.split(", ");
+        for (int i = 0; i < options.length; i++) {
+            String[] singleMove = options[i].split(" ");
+            defenceMove.put(singleMove[0], Integer.parseInt(singleMove[1]));
+        }
+        moveList.put("Defense", defenceMove);
     }
 
     public void changeHealth(int damage) {

@@ -1,11 +1,18 @@
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.HashMap;
 import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
-        int[][] dungeonMap = new int[6][6];
-        File f = new File("maps/map" + 3);
+
+        HashMap<String, Integer> attackMove = new HashMap<String, Integer>();
+        HashMap<String, Integer> defenceMove = new HashMap<String, Integer>();
+        HashMap<String, HashMap<String, Integer>> moveList = new HashMap<String, HashMap<String, Integer>>();
+
+
+
+        File f = new File("Enemies/enemy1");
         Scanner s = null;
         try {
             s = new Scanner(f);
@@ -13,21 +20,27 @@ public class Main {
         catch (FileNotFoundException fException) {
             System.out.println("File not found.");
         }
-        int row = 0;
-        while (s.hasNext()) {
-            String line = s.nextLine();
-            String[] rooms = line.split(" ");
-            for (int i = 0; i < rooms.length; i++) {
-                dungeonMap[row][i] = Integer.parseInt(rooms[i]);
-            }
-            row++;
+        String name = s.nextLine();
+        int healthPoints = Integer.parseInt(s.nextLine());
+        String line = s.nextLine();
+        String[] options = line.split(", ");
+        for (int i = 0; i < options.length; i++) {
+            String[] singleMove = options[i].split(" ");
+            attackMove.put(singleMove[0], Integer.parseInt(singleMove[1]));
         }
+        moveList.put("Attack", attackMove);
+        line = s.nextLine();
+        options = line.split(", ");
+        for (int i = 0; i < options.length; i++) {
+            String[] singleMove = options[i].split(" ");
+            defenceMove.put(singleMove[0], Integer.parseInt(singleMove[1]));
+        }
+        moveList.put("Defense", defenceMove);
 
-        for (int r = 0; r < dungeonMap.length; r++) {
-            for (int c = 0; c < dungeonMap[r].length; c++) {
-                System.out.print(dungeonMap[r][c] + " " );
-            }
-            System.out.println();
+        System.out.println("Name: " + name);
+        System.out.println("Health: " + healthPoints);
+        System.out.println("Moves: " + moveList);
+
         }
     }
-}
+
