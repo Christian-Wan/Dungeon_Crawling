@@ -11,9 +11,12 @@ public class Main {
 
         System.out.println("Health: " + enemy.getHealthPoints());
         System.out.println(enemy.getName());
+        enemy.getAttack();
         System.out.println(enemy.getCurrentAttack());
         System.out.println(enemy.enemyAttackPrint(enemy.getCurrentAttack()));
 
-        }
     }
+
+
+}
 

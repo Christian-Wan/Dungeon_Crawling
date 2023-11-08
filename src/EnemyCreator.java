@@ -1,13 +1,14 @@
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Scanner;
 
 public class EnemyCreator {
 
     private String name;
-    private int healthPoints;
+    private int healthPoints, maxHealthPoints;
     private HashMap<String, Integer> attackMove = new HashMap<String, Integer>();
     private HashMap<String, Integer> defenseMove = new HashMap<String, Integer>();
     private HashMap<String, HashMap<String, Integer>> moveList = new HashMap<String, HashMap<String, Integer>>();
@@ -49,6 +50,10 @@ public class EnemyCreator {
         return healthPoints;
     }
 
+    public int getMaxHealthPoints() {
+        return maxHealthPoints;
+    }
+
     public HashMap<String, Integer> getCurrentAttack() {
         return currentAttack;
     }
@@ -58,46 +63,52 @@ public class EnemyCreator {
 
     public void getAttack() {
         String temp = "";
-        int tempInt = 0;
         HashMap<String, Integer> tempMap = new HashMap<String, Integer>();
         int randomAttack = (int) (Math.random() * 3) + 1;
+
         if (randomAttack == 1) {
             int random = (int) (Math.random() * defenseMove.size());
-            for (Map.Entry<String, Integer> entry : defenseMove.entrySet()) {
-                temp = entry.getKey();
-                tempInt  = entry.getValue();
-                random--;
-                if (random == 0) {
-                    break;
-                }
-            }
-            tempMap.put(temp, tempInt);
+            Object[] defenseArray = defenseMove.keySet().toArray();
+            temp = defenseArray[random].toString();
+            tempMap.put(temp, defenseMove.get(temp));
         }
+
         else {
             int random = (int) (Math.random() * attackMove.size());
-            for (Map.Entry<String, Integer> entry : attackMove.entrySet()) {
-                temp = entry.getKey();
-                tempInt = entry.getValue();
-                random--;
-                if (random == 0) {
-                    break;
-
-                }
-            }
-            tempMap.put(temp, tempInt);
+            Object[] attackArray = attackMove.keySet().toArray();
+            temp = attackArray[random].toString();
+            tempMap.put(temp, attackMove.get(temp));
         }
         currentAttack = tempMap;
     }
 
     public String enemyAttackPrint(HashMap<String, Integer> move) {
         String attackName = "";
+        String attackStatement = "";
         int damage = 0;
-        for (Map.Entry<String, Integer> entry : move.entrySet()) {
-            attackName = entry.getKey();
-            damage = entry.getValue();
-        }
-        String statement = "";
+        Object[] moveArray = move.keySet().toArray();
+        attackName = moveArray[0].toString();
+        damage = move.get(attackName);
 
-        return "Enemy " + name + " " + attackName + " you for " + damage + " damage!";
+        String statement = "";
+        if (enemyAttackIsAttack(move)) {
+            attackStatement = "Enemy " + name + " " + attackName + " you for " + damage + " damage!";
+        }
+        else {
+            attackStatement = "Enemy " + name + " " + attackName + " itself for " + damage + " damage!";
+        }
+        return attackStatement;
     }
+
+    public boolean enemyAttackIsAttack(HashMap<String, Integer> move) {
+        boolean isAttack = false;
+
+        Object[] moveArray = move.keySet().toArray();
+        String attackName = moveArray[0].toString();
+        if (attackMove.keySet().contains(attackName)) {
+            isAttack = true;
+        }
+        return isAttack;
+    }
+
 }
