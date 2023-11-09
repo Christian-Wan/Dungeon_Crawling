@@ -59,5 +59,10 @@ public class Cards {
         return traits;
     }
 
+    public static int burn() {
+        return (int) (Math.random() * 3) + 3;
+    }
+
+
 
 }

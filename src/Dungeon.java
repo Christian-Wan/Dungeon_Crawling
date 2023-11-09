@@ -9,6 +9,7 @@ public class Dungeon {
     int playerRow = 4;
     int playerColumn = 4;
     int[][] dungeonMap = new int[6][6];
+
     public Dungeon(String chooser) {
         File f = new File("maps/map" + chooser);
         Scanner s = null;
@@ -106,20 +107,22 @@ public class Dungeon {
     }
 
 
-    public void runRoom() {
+    public String runRoom() {
         if (dungeonMap[playerRow][playerColumn] == 2) {
-            System.out.println("Bad");
+            return "Bad";
         }
         else if (dungeonMap[playerRow][playerColumn] == 3) {
-            System.out.println("Good");
+            return "Good";
         }
         else if (dungeonMap[playerRow][playerColumn] == 4) {
-            System.out.println("Boss");
+            return "Boss";
         }
         else {
-            System.out.println("Been");
+            return "Been";
         }
     }
+
+
 
 
 
