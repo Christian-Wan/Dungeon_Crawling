@@ -6,14 +6,14 @@ import java.util.Scanner;
 public class Main {
     public static void main(String[] args) {
 
-        EnemyCreator enemy = new EnemyCreator();
+        Cards card = new Cards("firebolt");
 
 
-        System.out.println("Health: " + enemy.getHealthPoints());
-        System.out.println(enemy.getName());
-        enemy.getAttack();
-        System.out.println(enemy.getCurrentAttack());
-        System.out.println(enemy.enemyAttackPrint(enemy.getCurrentAttack()));
+        System.out.println(card.getName());
+        System.out.println(card.getDescription());
+        System.out.println(card.getType());
+        System.out.println(card.getEffectiveness());
+        System.out.println(card.getTraits());
 
     }
 
