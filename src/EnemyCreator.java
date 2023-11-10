@@ -24,7 +24,8 @@ public class EnemyCreator {
             System.out.println("File not found.");
         }
         this.name = s.nextLine();
-        this.healthPoints = Integer.parseInt(s.nextLine());
+        this.maxHealthPoints = Integer.parseInt(s.nextLine());
+        this.healthPoints = maxHealthPoints;
         String line = s.nextLine();
         String[] options = line.split(", ");
         for (int i = 0; i < options.length; i++) {
