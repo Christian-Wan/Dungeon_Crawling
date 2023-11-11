@@ -13,6 +13,8 @@ public class Cards {
 
     private String description;
 
+    private int energyCost;
+
     
 
 
@@ -31,6 +33,7 @@ public class Cards {
         this.type = s.nextLine();
         this.description = s.nextLine();
         this.effectiveness = Integer.parseInt(s.nextLine());
+        this.energyCost = Integer.parseInt(s.nextLine());
         String line = s.nextLine();
         String[] options = line.split(", ");
         for (int i = 0; i < options.length; i++) {
@@ -38,6 +41,9 @@ public class Cards {
         }
     }
 
+    public int getEnergyCost() {
+        return energyCost;
+    }
 
     public String getName() {
         return name;

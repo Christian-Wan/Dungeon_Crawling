@@ -13,6 +13,7 @@ public class Player {
     ArrayList<Cards> playerDiscard = new ArrayList<Cards>();
     int playerHealth, playerMaxHealth;
     int playerEnergy, playerStartEnergy;
+    int shield = 0;
 
     public Player(String choice) {
         choice = choice.toLowerCase();
@@ -26,7 +27,9 @@ public class Player {
         }
         this.name = s.nextLine();
         this.playerMaxHealth = Integer.parseInt(s.nextLine());
-        this.playerHealth = playerMaxHealth;
+        this.playerHealth = Integer.parseInt(s.nextLine());
+        this.playerStartEnergy = Integer.parseInt(s.nextLine());
+        this.playerEnergy = Integer.parseInt(s.nextLine());
         String line = s.nextLine();
         String[] options = line.split(", ");
         for (int i = 0; i < options.length; i++) {
@@ -94,7 +97,10 @@ public class Player {
         playerDeck.add(new Cards(cardName));
     }
     public void deckToHand() {
-        while (playerHand.size() < 7 && playerDeck.size() != 0) {
+        while (playerHand.size() < 7) {
+            if (playerDeck.isEmpty()) {
+                discardToDeck();
+            }
             int random = (int) (Math.random() * playerDeck.size());
             playerHand.add(playerDeck.get(random));
             playerDeck.remove(random);
@@ -116,17 +122,15 @@ public class Player {
     public String displayHand() {
         String hand = "";
             for (int i = 0; i < playerHand.size(); i++) {
-                hand += i + 1 + ") " + (playerHand.get(i)).getName() + " - " + (playerHand.get(i).getDescription()) + "\n";
+                hand += i + 1 + ") " + playerHand.get(i).getName() + " (Cost: " + playerHand.get(i).getEnergyCost() + " Energy) - " + (playerHand.get(i).getDescription()) + "\n";
             }
         return hand;
     }
     public String toString() {
-        return "You HP: (" + playerHealth + "/" + playerMaxHealth + ")";
+        return name + "\nHP: " + playerHealth + "/" + playerMaxHealth + "  Energy: (" + playerEnergy + "/" + playerStartEnergy + ")  Shield: " + shield;
     }
 
     public String attackDisplay(String enemyName, int damage, String attackType) {
-
-
         String result = "";
         if (attackType.equals("attack")) {
             result = "You hit " + enemyName + " for " + damage + " damage!";
@@ -140,9 +144,19 @@ public class Player {
         return result;
     }
 
-    public String attackType(String choice) {
-        int choiceInt = Integer.parseInt(choice);
-        return playerHand.get(choiceInt).getType();
+    public String attackType(int choice) {
+        return playerHand.get(choice).getType();
     }
 
+    public void changePlayerShield(int effectiveness) {
+        shield += effectiveness;
+    }
+
+    public int getShield() {
+        return shield;
+    }
+
+    public Cards getActiveCard(int number) {
+        return playerHand.get(number);
+    }
 }
