@@ -17,7 +17,7 @@ public class Main {
 
         DungeonCrawlerRunner thing = new DungeonCrawlerRunner();
 
-        thing.badRoom1();
+        thing.selectCard();
 
     }
 

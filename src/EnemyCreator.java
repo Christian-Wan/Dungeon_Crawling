@@ -83,16 +83,16 @@ public class EnemyCreator {
         currentAttack = tempMap;
     }
 
-    public String enemyAttackPrint(HashMap<String, Integer> move) {
+    public String enemyAttackPrint() {
         String attackName = "";
         String attackStatement = "";
         int damage = 0;
-        Object[] moveArray = move.keySet().toArray();
+        Object[] moveArray = currentAttack.keySet().toArray();
         attackName = moveArray[0].toString();
-        damage = move.get(attackName);
+        damage = currentAttack.get(attackName);
 
         String statement = "";
-        if (enemyAttackIsAttack(move)) {
+        if (enemyAttackIsAttack()) {
             attackStatement = "Enemy " + name + " " + attackName + " you for " + damage + " damage!";
         }
         else {
@@ -101,15 +101,30 @@ public class EnemyCreator {
         return attackStatement;
     }
 
-    public boolean enemyAttackIsAttack(HashMap<String, Integer> move) {
+    public void stopOverHeal() {
+        String attackName = "";
+        int healing = maxHealthPoints - healthPoints;
+        Object[] moveArray = currentAttack.keySet().toArray();
+        attackName = moveArray[0].toString();
+        currentAttack.replace(attackName, currentAttack.get(attackName), healing);
+    }
+
+    public boolean enemyAttackIsAttack() {
         boolean isAttack = false;
 
-        Object[] moveArray = move.keySet().toArray();
+        Object[] moveArray = currentAttack.keySet().toArray();
         String attackName = moveArray[0].toString();
         if (attackMove.keySet().contains(attackName)) {
             isAttack = true;
         }
         return isAttack;
+    }
+
+    public int getEffectiveness() {
+        String attackName = "";
+        Object[] moveArray = currentAttack.keySet().toArray();
+        attackName = moveArray[0].toString();
+        return currentAttack.get(attackName);
     }
 
     public String toString() {

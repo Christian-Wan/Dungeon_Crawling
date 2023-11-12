@@ -159,4 +159,8 @@ public class Player {
     public Cards getActiveCard(int number) {
         return playerHand.get(number);
     }
+
+    public void obtainableToDeck(int choice) {
+        playerDeck.add(obtainableCards.get(choice));
+    }
 }
