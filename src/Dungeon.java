@@ -28,6 +28,7 @@ public class Dungeon {
             }
             row++;
         }
+        s.close();
     }
     public Dungeon() {
         int chooser = (int) (Math.random() * 3) + 1;
@@ -49,6 +50,7 @@ public class Dungeon {
             }
             row++;
         }
+        s.close();
     }
 
     public boolean moveNorth() {
@@ -81,6 +83,11 @@ public class Dungeon {
     }
 
     public String movePlayer(String movement) {
+        movement = movement.toLowerCase();
+        String[] allow = {"n", "e", "s", "w"};
+        if (!InputValidation.stringValidate(allow, movement)) {
+            return "That is not an option";
+        }
 
         if (movement.equals("n") && moveNorth()) {
             dungeonMap[playerRow][playerColumn] = 5;

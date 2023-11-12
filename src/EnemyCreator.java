@@ -40,8 +40,37 @@ public class EnemyCreator {
             defenseMove.put(singleMove[0], Integer.parseInt(singleMove[1]));
         }
         moveList.put("Defense", defenseMove);
+        s.close();
     }
 
+    public EnemyCreator(String check) {
+        File f = new File("bosses/boss1");
+        Scanner s = null;
+        try {
+            s = new Scanner(f);
+        }
+        catch (FileNotFoundException fException) {
+            System.out.println("File not found.");
+        }
+        this.name = s.nextLine();
+        this.maxHealthPoints = Integer.parseInt(s.nextLine());
+        this.healthPoints = maxHealthPoints;
+        String line = s.nextLine();
+        String[] options = line.split(", ");
+        for (int i = 0; i < options.length; i++) {
+            String[] singleMove = options[i].split(" ");
+            attackMove.put(singleMove[0], Integer.parseInt(singleMove[1]));
+        }
+        moveList.put("Attack", attackMove);
+        line = s.nextLine();
+        options = line.split(", ");
+        for (int i = 0; i < options.length; i++) {
+            String[] singleMove = options[i].split(" ");
+            defenseMove.put(singleMove[0], Integer.parseInt(singleMove[1]));
+        }
+        moveList.put("Defense", defenseMove);
+        s.close();
+    }
     public void changeHealth(int damage) {
 
         healthPoints -= damage;

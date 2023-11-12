@@ -42,6 +42,7 @@ public class Player {
         }
         turnToObject(playerDeckString, playerDeck);
         turnToObject(obtainableCardsString, obtainableCards);
+        s.close();
     }
 
 
@@ -49,7 +50,7 @@ public class Player {
         return name;
     }
 
-    public void turnToObject(ArrayList<String> from, ArrayList<Cards> to) {
+    private void turnToObject(ArrayList<String> from, ArrayList<Cards> to) {
         for (int i = 0; i < from.size(); i++) {
             Cards card = new Cards(from.get(i));
             to.add(card);

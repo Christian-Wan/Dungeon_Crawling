@@ -39,6 +39,7 @@ public class Cards {
         for (int i = 0; i < options.length; i++) {
             traits.add(options[i]);
         }
+        s.close();
     }
 
     public int getEnergyCost() {

@@ -16,8 +16,8 @@ public class Main {
         DungeonCrawlerRunner.importPlayer(choice);
 
         DungeonCrawlerRunner thing = new DungeonCrawlerRunner();
-
-        thing.selectCard();
+        thing.badRoom1();
+        thing.badRoom1();
 
     }
 

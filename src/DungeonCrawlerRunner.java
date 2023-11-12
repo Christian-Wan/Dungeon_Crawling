@@ -1,3 +1,4 @@
+import java.sql.SQLOutput;
 import java.util.Scanner;
 
 public class DungeonCrawlerRunner {
@@ -5,6 +6,13 @@ public class DungeonCrawlerRunner {
         Scanner s = new Scanner(System.in);
         String playerChoice;
         Dungeon play;
+
+
+        System.out.println("Welcome to Unique Game Title");
+        System.out.println("Here is an overview: " +
+                "\n- This game is a Deck Building Dungeon crawler" +
+                "\n- The game ends when either you or the boss dies" +
+                "\n- When the game asks for input available inputs are explained in ()\n");
 
         System.out.println(
                           "Pick a class:" +
@@ -15,7 +23,7 @@ public class DungeonCrawlerRunner {
         playerChoice = s.nextLine();
         String[] acceptable = {"Barbarian", "barbarian", "Wizard", "wizard", "Rouge", "rouge"};
         while (!InputValidation.stringValidate(acceptable, playerChoice)) {
-            System.out.println("That is not an option (Type out the name to select): ");
+            System.out.print("That is not an option (Type out the name to select): ");
             playerChoice = s.nextLine();
         }
         importPlayer(playerChoice);
@@ -33,27 +41,40 @@ public class DungeonCrawlerRunner {
         String move;
 
 
-        while (true) {
+        while (player.getPlayerHealth() > 0 && boss.getHealthPoints() > 0) {
             do {
+                System.out.println();
                 System.out.print("Choose Direction (n - North, e - East, s - South, w - West): ");
                 playerChoice = s.nextLine();
                 move = play.movePlayer(playerChoice);
                 System.out.println(move);
-            } while (move.equals("You walk into a wall"));
-            play.runRoom();
+            } while (move.equals("You walk into a wall") || move.equals("That is not an option"));
+            String room = play.runRoom();
+            if (room.equals("Bad")) {
+                badRoom1();
+            }
+            else if (room.equals("Good")) {
+                goodRoom1();
+            }
+            else if (room.equals("Boss")) {
+                bossRoom();
+            }
+            else {
+                System.out.println("You have been to this room");
+            }
         }
     }
     static Player player;
     static EnemyCreator enemy1 = new EnemyCreator();
     static EnemyCreator enemy2 = new EnemyCreator();
     static EnemyCreator enemy3 = new EnemyCreator();
+    static EnemyCreator boss = new EnemyCreator("");
 
     public static void importPlayer(String choice) {
         player = new Player(choice);
     }
 
     public static void selectCard() {
-        System.out.println(player.getPlayerDeck());
         Scanner s = new Scanner(System.in);
         int choice = 0;
         int card1;
@@ -72,7 +93,7 @@ public class DungeonCrawlerRunner {
                 "\n2) " + player.getObtainableCards().get(card2).getName() + " (Cost: " + player.getObtainableCards().get(card2).getEnergyCost() + " Energy) - " + player.getObtainableCards().get(card2).getDescription() +
                 "\n3) " + player.getObtainableCards().get(card3).getName() + " (Cost: " + player.getObtainableCards().get(card3).getEnergyCost() + " Energy) - " + player.getObtainableCards().get(card3).getDescription());
 
-        System.out.println("Pick one (Type 1-3 to pick/-1 to skip):");
+        System.out.print("Pick one (Type 1-3 to pick/-1 to skip): ");
         do {
             try {
                 choice = Integer.parseInt(s.nextLine());
@@ -92,13 +113,13 @@ public class DungeonCrawlerRunner {
         else if (choice == 3){
             player.obtainableToDeck(card3);
         }
-        System.out.println(player.getPlayerDeck());
     }
 
     public static void badRoom1() {
         boolean energyCheck;
         Scanner s = new Scanner(System.in);
         int choice = 0;
+        enemy1 = new EnemyCreator();
         System.out.println("You enter a room with a " + enemy1.getName());
 
 
@@ -117,7 +138,7 @@ public class DungeonCrawlerRunner {
                 System.out.println(player.toString());
                 System.out.println("-------------------");
                 System.out.println(player.displayHand());
-                System.out.println("Which attack would you like to do (Choose a number/-1 to end turn): ");
+                System.out.print("Which attack would you like to do (Choose a number/-1 to end turn): ");
                 try {
                     choice = Integer.parseInt(s.nextLine()) - 1;
                 }
@@ -133,7 +154,7 @@ public class DungeonCrawlerRunner {
 
                 while (!InputValidation.integerValidate(0, (player.getPlayerHand().size() - 1), -2, choice) || energyCheck == false) {
                     if (!InputValidation.integerValidate(0, (player.getPlayerHand().size() - 1), -2, choice)) {
-                        System.out.println("That is not an option (Choose a number/-1 to end turn): ");
+                        System.out.print("That is not an option (Choose a number/-1 to end turn): ");
                         try {
                             choice = Integer.parseInt(s.nextLine()) - 1;
                         } catch (NumberFormatException e) {
@@ -147,7 +168,7 @@ public class DungeonCrawlerRunner {
                             energyCheck = true;
                         }
                         else {
-                            System.out.println("Card costs too much energy (Choose a number/-1 to end turn): ");
+                            System.out.print("Card costs too much energy (Choose a number/-1 to end turn): ");
                             try {
                                 choice = Integer.parseInt(s.nextLine()) - 1;
                             } catch (NumberFormatException e) {
@@ -193,30 +214,212 @@ public class DungeonCrawlerRunner {
                 player.handToDiscard(i);
             }
 
-            enemy1.getAttack();
-            System.out.println(enemy1.enemyAttackPrint());
 
-            if (enemy1.enemyAttackIsAttack()) {
-                int damage = enemy1.getEffectiveness();
+            if (enemy1.getHealthPoints() > 0) {
+                enemy1.getAttack();
+                System.out.println(enemy1.enemyAttackPrint());
 
-                while (player.getShield() > 0 && damage != 0) {
-                    player.changePlayerShield(-1);
-                    damage--;
+                if (enemy1.enemyAttackIsAttack()) {
+                    int damage = enemy1.getEffectiveness();
+
+                    while (player.getShield() > 0 && damage != 0) {
+                        player.changePlayerShield(-1);
+                        damage--;
+                    }
+                    player.changePlayerHealth(damage);
+
+                } else {
+                    if (enemy1.getHealthPoints() + enemy1.getEffectiveness() > enemy1.getMaxHealthPoints()) {
+                        enemy1.stopOverHeal();
+                    }
+
+                    enemy1.changeHealth(-enemy1.getEffectiveness());
                 }
-                player.changePlayerHealth(damage);
-
-            }
-            else {
-                if (enemy1.getHealthPoints() + enemy1.getEffectiveness() > enemy1.getMaxHealthPoints()) {
-                    enemy1.stopOverHeal();
-                }
-
-                enemy1.changeHealth(-enemy1.getEffectiveness());
             }
 
         }
         System.out.println("-------------------");
         if (player.getPlayerHealth() > 0) {
+            selectCard();
+        }
+
+    }
+
+    public static void goodRoom1() {
+        System.out.println();
+        int choice;
+        Scanner s = new Scanner(System.in);
+        System.out.println("You enter a room full of weapons\n");
+        System.out.print(
+                "1) Pick a card\n" +
+                "2) Leave\n" +
+                "What would you like to do (Type the number you would like to select): ");
+
+
+        try {
+            choice = Integer.parseInt(s.nextLine());
+        }
+        catch (NumberFormatException e) {
+            choice = -3;
+        }
+        while (!InputValidation.integerValidate(1, 2, choice)) {
+            System.out.print("That is not an option (Type the number you would like to select): ");
+            try {
+                choice = Integer.parseInt(s.nextLine());
+            }
+            catch (NumberFormatException e) {
+                choice = -3;
+            }
+        }
+
+
+
+        if (choice == 1) {
+            for (int i = 0; i < player.getObtainableCards().size(); i++) {
+                System.out.println(i + 1 + ") " + player.getObtainableCards().get(i).getName() + " (Cost: " + player.getObtainableCards().get(i).getEnergyCost() + " Energy) - " + (player.getObtainableCards().get(i).getDescription()) + "");
+            }
+            System.out.print("Pick a card (Type the number of the desired card/-1 to leave): ");
+            try {
+                choice = Integer.parseInt(s.nextLine()) - 1;
+            }
+            catch (NumberFormatException e) {
+                choice = -3;
+            }
+
+
+            while (!InputValidation.integerValidate(0, (player.getObtainableCards().size() - 1), -2, choice)) {
+                System.out.print("That is not an option (Type the number of the desired card/-1 to leave): ");
+                try {
+                    choice = Integer.parseInt(s.nextLine()) - 1;
+                } catch (NumberFormatException e) {
+                    choice = -3;
+
+                }
+            }
+            if (choice != -2) {
+                player.obtainableToDeck(choice);
+            }
+        }
+    }
+
+    public static void bossRoom() {
+        boolean energyCheck;
+        Scanner s = new Scanner(System.in);
+        int choice = 0;
+        System.out.println("You enter the final room");
+
+
+        while(boss.getHealthPoints() > 0 && player.getPlayerHealth() > 0) {
+            player.changePlayerEnergy(player.playerStartEnergy);
+            player.deckToHand();
+            player.changePlayerShield(-player.getShield());
+
+
+            while(!player.playerHand.isEmpty() && boss.getHealthPoints() > 0) {
+                energyCheck = false;
+
+                System.out.println("-------------------");
+                System.out.println(boss.toString());
+                System.out.println("-------------------");
+                System.out.println(player.toString());
+                System.out.println("-------------------");
+                System.out.println(player.displayHand());
+                System.out.print("Which attack would you like to do (Choose a number/-1 to end turn): ");
+                try {
+                    choice = Integer.parseInt(s.nextLine()) - 1;
+                }
+                catch (NumberFormatException e) {
+                    choice = 9;
+                }
+
+                if (InputValidation.integerValidate(0, (player.getPlayerHand().size() - 1), -2, choice)) {
+                    if (choice == -2 || player.getActiveCard(choice).getEnergyCost() < player.getPlayerEnergy()) {
+                        energyCheck = true;
+                    }
+                }
+
+                while (!InputValidation.integerValidate(0, (player.getPlayerHand().size() - 1), -2, choice) || energyCheck == false) {
+                    if (!InputValidation.integerValidate(0, (player.getPlayerHand().size() - 1), -2, choice)) {
+                        System.out.print("That is not an option (Choose a number/-1 to end turn): ");
+                        try {
+                            choice = Integer.parseInt(s.nextLine()) - 1;
+                        } catch (NumberFormatException e) {
+                            choice = 9;
+                        }
+                    }
+                    else if (choice != -2){
+                        if (player.getActiveCard(choice).getEnergyCost() <= player.getPlayerEnergy()) {
+                            System.out.println("Card cost: " + player.getActiveCard(choice).getEnergyCost());
+                            System.out.println("Player: " + player.getPlayerEnergy());
+                            energyCheck = true;
+                        }
+                        else {
+                            System.out.print("Card costs too much energy (Choose a number/-1 to end turn): ");
+                            try {
+                                choice = Integer.parseInt(s.nextLine()) - 1;
+                            } catch (NumberFormatException e) {
+                                choice = 9;
+                            }
+                        }
+                    }
+                    else {
+                        energyCheck = true;
+                    }
+
+                }
+
+
+                System.out.println("-------------------");
+                if (choice == -2) { //might need to get rid of the break statement
+                    System.out.println("You end your turn");
+                    break;
+                }
+                int damage = player.getPlayerHand().get(choice).getEffectiveness();
+                if (player.attackType(choice).equals("attack")) {
+                    boss.changeHealth(damage);
+                    System.out.println(player.attackDisplay(boss.getName(), damage, player.attackType(choice)));
+                }
+                else if (player.attackType(choice).equals("defend/heal")) { //don't know if this works properly
+                    if (player.getPlayerHealth() + damage > player.getPlayerMaxHealth()) {
+                        damage = player.getPlayerMaxHealth() - player.getPlayerHealth(); //Makes sure that player doesn't go over their max hp
+                    }
+
+                    player.changePlayerHealth(-damage);
+                    System.out.println(player.attackDisplay(boss.getName(), damage, player.attackType(choice)));
+                }
+                else {
+                    player.changePlayerShield(damage);
+                    System.out.println(player.attackDisplay(boss.getName(), damage, player.attackType(choice)));
+                }
+                player.changePlayerEnergy(player.getPlayerEnergy() - player.getActiveCard(choice).getEnergyCost()); // decreases the players energy by the amount the card costs
+                player.handToDiscard(choice);
+            }
+
+
+            for (int i = 0; i < player.playerHand.size(); i++) { //Sends the players remaining hand to discard
+                player.handToDiscard(i);
+            }
+            if (boss.getHealthPoints() > 0) {
+                boss.getAttack();
+                System.out.println(boss.enemyAttackPrint());
+
+                if (boss.enemyAttackIsAttack()) {
+                    int damage = boss.getEffectiveness();
+
+                    while (player.getShield() > 0 && damage != 0) {
+                        player.changePlayerShield(-1);
+                        damage--;
+                    }
+                    player.changePlayerHealth(damage);
+
+                } else {
+                    if (boss.getHealthPoints() + boss.getEffectiveness() > boss.getMaxHealthPoints()) {
+                        boss.stopOverHeal();
+                    }
+
+                    boss.changeHealth(-boss.getEffectiveness());
+                }
+            }
 
         }
 
