@@ -12,7 +12,8 @@ public class DungeonCrawlerRunner {
         System.out.println("Here is an overview: " +
                 "\n- This game is a Deck Building Dungeon crawler" +
                 "\n- The game ends when either you or the boss dies" +
-                "\n- When the game asks for input available inputs are explained in ()\n");
+                "\n- When the game asks for input available inputs are explained in ()" +
+                "\n- Currently only wizard works\n");
 
         System.out.println(
                           "Pick a class:" +

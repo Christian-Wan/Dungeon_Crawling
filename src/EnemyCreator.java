@@ -14,9 +14,10 @@ public class EnemyCreator {
     private HashMap<String, HashMap<String, Integer>> moveList = new HashMap<String, HashMap<String, Integer>>();
     private HashMap<String, Integer> currentAttack = new HashMap<String, Integer>();
     private HashMap<String, Integer> ailments = new HashMap<String, Integer>();
+    private int shield = 0;
 
     public EnemyCreator() {
-        File f = new File("enemies/enemy1");
+        File f = new File("enemies/enemy" + (int) (Math.random() * 2) + 1);
         Scanner s = null;
         try {
             s = new Scanner(f);
@@ -41,6 +42,11 @@ public class EnemyCreator {
             defenseMove.put(singleMove[0], Integer.parseInt(singleMove[1]));
         }
         moveList.put("Defense", defenseMove);
+        ailments.put("Burn", 0);
+        ailments.put("Freeze", 0);
+        ailments.put("Bleed", 0);
+        ailments.put("Poison", 0);
+        ailments.put("Strength", 0);
         s.close();
     }
 
@@ -70,6 +76,11 @@ public class EnemyCreator {
             defenseMove.put(singleMove[0], Integer.parseInt(singleMove[1]));
         }
         moveList.put("Defense", defenseMove);
+        ailments.put("Burn", 0);
+        ailments.put("Freeze", 0);
+        ailments.put("Bleed", 0);
+        ailments.put("Poison", 0);
+        ailments.put("Strength", 0);
         s.close();
     }
     public void changeHealth(int damage) {
@@ -166,7 +177,32 @@ public class EnemyCreator {
     }
 
     public String toString() {
-        return name + " HP: (" + healthPoints + "/" + maxHealthPoints + ")";
+        return name + " HP: (" + healthPoints + "/" + maxHealthPoints + ")  Shield: " + shield + " Status Effects: ";
     }
 
+
+
+    public void doBurn() {
+        changeHealth(ailments.get("Burn"));
+    }
+    public boolean freezeTrue() {
+        return ailments.get("Freeze") == 1;
+    }
+    public void doBleed() {
+        changeHealth((ailments.get("Bleed")));
+    }
+    public void doPoison() {
+        changeHealth(ailments.get("Poison"));
+    }
+    public int getStrength() {
+        return ailments.get("Strength");
+    }
+
+    public void changeShield(int value) {
+        shield += value;
+    }
+
+    public boolean burnTrue() {
+        return ailments.get("burn") > 0;
+    }
 }
