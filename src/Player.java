@@ -4,16 +4,16 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Player {
-    String name;
-    ArrayList<String> playerDeckString = new ArrayList<String>();
-    ArrayList<String> obtainableCardsString = new ArrayList<String>();
-    ArrayList<Cards> playerDeck = new ArrayList<Cards>();
-    ArrayList<Cards> playerHand = new ArrayList<Cards>();
-    ArrayList<Cards> obtainableCards = new ArrayList<Cards>();
-    ArrayList<Cards> playerDiscard = new ArrayList<Cards>();
-    int playerHealth, playerMaxHealth;
-    int playerEnergy, playerStartEnergy;
-    int shield = 0;
+    private String name;
+    private ArrayList<String> playerDeckString = new ArrayList<String>();
+    private ArrayList<String> obtainableCardsString = new ArrayList<String>();
+    private ArrayList<Cards> playerDeck = new ArrayList<Cards>();
+    private ArrayList<Cards> playerHand = new ArrayList<Cards>();
+    private ArrayList<Cards> obtainableCards = new ArrayList<Cards>();
+    private ArrayList<Cards> playerDiscard = new ArrayList<Cards>();
+    private int playerHealth, playerMaxHealth;
+    private int playerEnergy, playerStartEnergy;
+    private int shield = 0;
 
     public Player(String choice) {
         choice = choice.toLowerCase();

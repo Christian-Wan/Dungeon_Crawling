@@ -44,7 +44,7 @@ public class DungeonCrawlerRunner {
         while (player.getPlayerHealth() > 0 && boss.getHealthPoints() > 0) {
             do {
                 System.out.println();
-                System.out.print("Choose Direction (n - North, e - East, s - South, w - West): ");
+                System.out.print("Choose Direction (Type the letter of the direction: n - North, e - East, s - South, w - West): ");
                 playerChoice = s.nextLine();
                 move = play.movePlayer(playerChoice);
                 System.out.println(move);
@@ -62,6 +62,13 @@ public class DungeonCrawlerRunner {
             else {
                 System.out.println("You have been to this room");
             }
+
+        }
+        if (player.getPlayerHealth() > 0) {
+            System.out.println("VICTORY!");
+        }
+        else {
+            System.out.println("DEFEAT!");
         }
     }
     static Player player;
@@ -93,7 +100,7 @@ public class DungeonCrawlerRunner {
                 "\n2) " + player.getObtainableCards().get(card2).getName() + " (Cost: " + player.getObtainableCards().get(card2).getEnergyCost() + " Energy) - " + player.getObtainableCards().get(card2).getDescription() +
                 "\n3) " + player.getObtainableCards().get(card3).getName() + " (Cost: " + player.getObtainableCards().get(card3).getEnergyCost() + " Energy) - " + player.getObtainableCards().get(card3).getDescription());
 
-        System.out.print("Pick one (Type 1-3 to pick/-1 to skip): ");
+        System.out.print("Pick one (Choose a number from the list or -1 to skip): ");
         do {
             try {
                 choice = Integer.parseInt(s.nextLine());
@@ -101,7 +108,7 @@ public class DungeonCrawlerRunner {
                 choice = 9;
             }
             if (!InputValidation.integerValidate(1, 3, -1, choice)) {
-                System.out.println("That is not an option (Type 1-3 to pick/-1 to skip):");
+                System.out.println("That is not an option (Choose a number from the list or -1 to skip):");
             }
         } while (!InputValidation.integerValidate(1, 3, -1, choice));
         if (choice == 1) {
@@ -124,12 +131,12 @@ public class DungeonCrawlerRunner {
 
 
         while(enemy1.getHealthPoints() > 0 && player.getPlayerHealth() > 0) {
-            player.changePlayerEnergy(player.playerStartEnergy);
+            player.changePlayerEnergy(player.getPlayerStartEnergy());
             player.deckToHand();
             player.changePlayerShield(-player.getShield());
 
 
-            while(!player.playerHand.isEmpty() && enemy1.getHealthPoints() > 0) {
+            while(!player.getPlayerHand().isEmpty() && enemy1.getHealthPoints() > 0) {
                 energyCheck = false;
 
                 System.out.println("-------------------");
@@ -138,7 +145,7 @@ public class DungeonCrawlerRunner {
                 System.out.println(player.toString());
                 System.out.println("-------------------");
                 System.out.println(player.displayHand());
-                System.out.print("Which attack would you like to do (Choose a number/-1 to end turn): ");
+                System.out.print("Which attack would you like to do (Choose a number from the list or -1 to end turn): ");
                 try {
                     choice = Integer.parseInt(s.nextLine()) - 1;
                 }
@@ -154,7 +161,7 @@ public class DungeonCrawlerRunner {
 
                 while (!InputValidation.integerValidate(0, (player.getPlayerHand().size() - 1), -2, choice) || energyCheck == false) {
                     if (!InputValidation.integerValidate(0, (player.getPlayerHand().size() - 1), -2, choice)) {
-                        System.out.print("That is not an option (Choose a number/-1 to end turn): ");
+                        System.out.print("That is not an option (Choose a number from the list or -1 to end turn): ");
                         try {
                             choice = Integer.parseInt(s.nextLine()) - 1;
                         } catch (NumberFormatException e) {
@@ -163,12 +170,10 @@ public class DungeonCrawlerRunner {
                     }
                     else if (choice != -2){
                         if (player.getActiveCard(choice).getEnergyCost() <= player.getPlayerEnergy()) {
-                            System.out.println("Card cost: " + player.getActiveCard(choice).getEnergyCost());
-                            System.out.println("Player: " + player.getPlayerEnergy());
                             energyCheck = true;
                         }
                         else {
-                            System.out.print("Card costs too much energy (Choose a number/-1 to end turn): ");
+                            System.out.print("Card costs too much energy (Choose a number from the list or -1 to end turn): ");
                             try {
                                 choice = Integer.parseInt(s.nextLine()) - 1;
                             } catch (NumberFormatException e) {
@@ -210,7 +215,7 @@ public class DungeonCrawlerRunner {
             }
 
 
-            for (int i = 0; i < player.playerHand.size(); i++) { //Sends the players remaining hand to discard
+            for (int i = 0; i < player.getPlayerHand().size(); i++) { //Sends the players remaining hand to discard
                 player.handToDiscard(i);
             }
 
@@ -302,6 +307,44 @@ public class DungeonCrawlerRunner {
         }
     }
 
+    public static void goodRoom2() {
+        System.out.println();
+        int choice;
+        int heal = (int) (player.getPlayerMaxHealth() * .25);
+        Scanner s = new Scanner(System.in);
+        System.out.println("You meet a nurse who offers to heal you\n");
+        System.out.print(
+                "1) Heal for " + heal + " HP\n" +
+                        "2) Leave\n" +
+                        "What would you like to do (Type the number you would like to select): ");
+
+
+        try {
+            choice = Integer.parseInt(s.nextLine());
+        }
+        catch (NumberFormatException e) {
+            choice = -3;
+        }
+        while (!InputValidation.integerValidate(1, 2, choice)) {
+            System.out.print("That is not an option (Type the number you would like to select): ");
+            try {
+                choice = Integer.parseInt(s.nextLine());
+            }
+            catch (NumberFormatException e) {
+                choice = -3;
+            }
+        }
+
+
+
+        if (choice == 1) {
+            player.changePlayerHealth(-heal);
+            if (player.getPlayerHealth() > player.getPlayerMaxHealth()) {
+                player.changePlayerHealth(player.getPlayerMaxHealth() - player.getPlayerHealth());
+            }
+        }
+    }
+
     public static void bossRoom() {
         boolean energyCheck;
         Scanner s = new Scanner(System.in);
@@ -310,12 +353,12 @@ public class DungeonCrawlerRunner {
 
 
         while(boss.getHealthPoints() > 0 && player.getPlayerHealth() > 0) {
-            player.changePlayerEnergy(player.playerStartEnergy);
+            player.changePlayerEnergy(player.getPlayerStartEnergy());
             player.deckToHand();
             player.changePlayerShield(-player.getShield());
 
 
-            while(!player.playerHand.isEmpty() && boss.getHealthPoints() > 0) {
+            while(!player.getPlayerHand().isEmpty() && boss.getHealthPoints() > 0) {
                 energyCheck = false;
 
                 System.out.println("-------------------");
@@ -324,7 +367,7 @@ public class DungeonCrawlerRunner {
                 System.out.println(player.toString());
                 System.out.println("-------------------");
                 System.out.println(player.displayHand());
-                System.out.print("Which attack would you like to do (Choose a number/-1 to end turn): ");
+                System.out.print("Which attack would you like to do (Choose a number from the list or -1 to end turn): ");
                 try {
                     choice = Integer.parseInt(s.nextLine()) - 1;
                 }
@@ -340,7 +383,7 @@ public class DungeonCrawlerRunner {
 
                 while (!InputValidation.integerValidate(0, (player.getPlayerHand().size() - 1), -2, choice) || energyCheck == false) {
                     if (!InputValidation.integerValidate(0, (player.getPlayerHand().size() - 1), -2, choice)) {
-                        System.out.print("That is not an option (Choose a number/-1 to end turn): ");
+                        System.out.print("That is not an option (Choose a number from the list or -1 to end turn): ");
                         try {
                             choice = Integer.parseInt(s.nextLine()) - 1;
                         } catch (NumberFormatException e) {
@@ -354,7 +397,7 @@ public class DungeonCrawlerRunner {
                             energyCheck = true;
                         }
                         else {
-                            System.out.print("Card costs too much energy (Choose a number/-1 to end turn): ");
+                            System.out.print("Card costs too much energy (Choose a number from the list or -1 to end turn): ");
                             try {
                                 choice = Integer.parseInt(s.nextLine()) - 1;
                             } catch (NumberFormatException e) {
@@ -396,7 +439,7 @@ public class DungeonCrawlerRunner {
             }
 
 
-            for (int i = 0; i < player.playerHand.size(); i++) { //Sends the players remaining hand to discard
+            for (int i = 0; i < player.getPlayerHand().size(); i++) { //Sends the players remaining hand to discard
                 player.handToDiscard(i);
             }
             if (boss.getHealthPoints() > 0) {

@@ -13,7 +13,8 @@ public class EnemyCreator {
     private HashMap<String, Integer> defenseMove = new HashMap<String, Integer>();
     private HashMap<String, HashMap<String, Integer>> moveList = new HashMap<String, HashMap<String, Integer>>();
     private HashMap<String, Integer> currentAttack = new HashMap<String, Integer>();
-    //figure out a way to re-randomize the enemy type
+    private HashMap<String, Integer> ailments = new HashMap<String, Integer>();
+
     public EnemyCreator() {
         File f = new File("enemies/enemy1");
         Scanner s = null;
@@ -154,6 +155,14 @@ public class EnemyCreator {
         Object[] moveArray = currentAttack.keySet().toArray();
         attackName = moveArray[0].toString();
         return currentAttack.get(attackName);
+    }
+
+    public void addAilment() { //need to make the to string print out the ailments
+
+    }
+
+    public void doAilments() {
+
     }
 
     public String toString() {
