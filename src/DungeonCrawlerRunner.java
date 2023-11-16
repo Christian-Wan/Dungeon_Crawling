@@ -235,11 +235,16 @@ public class DungeonCrawlerRunner {
                     player.changePlayerHealth(damage);
 
                 } else {
-                    if (enemy1.getHealthPoints() + enemy1.getEffectiveness() > enemy1.getMaxHealthPoints()) {
-                        enemy1.stopOverHeal();
+                    if (enemy1.getCurrentAttack().containsKey("shields")) {
+                        enemy1.changeShield(enemy1.getEffectiveness());
                     }
+                    else {
+                        if (enemy1.getHealthPoints() + enemy1.getEffectiveness() > enemy1.getMaxHealthPoints()) {
+                            enemy1.stopOverHeal();
+                        }
 
-                    enemy1.changeHealth(-enemy1.getEffectiveness());
+                        enemy1.changeHealth(-enemy1.getEffectiveness());
+                    }
                 }
             }
 

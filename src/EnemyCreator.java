@@ -1,8 +1,6 @@
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
 import java.util.Scanner;
 
 public class EnemyCreator {
@@ -10,14 +8,15 @@ public class EnemyCreator {
     private String name;
     private int healthPoints, maxHealthPoints;
     private HashMap<String, Integer> attackMove = new HashMap<String, Integer>();
+    private HashMap<String, String[]> attackMoveTraits = new HashMap<String, String[]>();
     private HashMap<String, Integer> defenseMove = new HashMap<String, Integer>();
-    private HashMap<String, HashMap<String, Integer>> moveList = new HashMap<String, HashMap<String, Integer>>();
+    private HashMap<String, String[]> defenseMoveTraits = new HashMap<String, String[]>();
     private HashMap<String, Integer> currentAttack = new HashMap<String, Integer>();
     private HashMap<String, Integer> ailments = new HashMap<String, Integer>();
     private int shield = 0;
 
     public EnemyCreator() {
-        File f = new File("enemies/enemy" + (int) (Math.random() * 2) + 1);
+        File f = new File("enemies/enemy1");
         Scanner s = null;
         try {
             s = new Scanner(f);
@@ -34,14 +33,21 @@ public class EnemyCreator {
             String[] singleMove = options[i].split(" ");
             attackMove.put(singleMove[0], Integer.parseInt(singleMove[1]));
             }
-        moveList.put("Attack", attackMove);
+        //Maybe this works
+//        line = s.nextLine();
+//        options = line.split(", ");
+//        for (int i = 0; i < options.length; i++) {
+//            String[] singleMove = options[i].split(" ");
+//            String[] traits = {singleMove[1], singleMove[2]};
+//            attackMoveTraits.put(singleMove[0], traits);
+//        }
+
         line = s.nextLine();
         options = line.split(", ");
         for (int i = 0; i < options.length; i++) {
             String[] singleMove = options[i].split(" ");
             defenseMove.put(singleMove[0], Integer.parseInt(singleMove[1]));
         }
-        moveList.put("Defense", defenseMove);
         ailments.put("Burn", 0);
         ailments.put("Freeze", 0);
         ailments.put("Bleed", 0);
@@ -68,14 +74,12 @@ public class EnemyCreator {
             String[] singleMove = options[i].split(" ");
             attackMove.put(singleMove[0], Integer.parseInt(singleMove[1]));
         }
-        moveList.put("Attack", attackMove);
         line = s.nextLine();
         options = line.split(", ");
         for (int i = 0; i < options.length; i++) {
             String[] singleMove = options[i].split(" ");
             defenseMove.put(singleMove[0], Integer.parseInt(singleMove[1]));
         }
-        moveList.put("Defense", defenseMove);
         ailments.put("Burn", 0);
         ailments.put("Freeze", 0);
         ailments.put("Bleed", 0);
@@ -177,7 +181,23 @@ public class EnemyCreator {
     }
 
     public String toString() {
-        return name + " HP: (" + healthPoints + "/" + maxHealthPoints + ")  Shield: " + shield + " Status Effects: ";
+        String display = name + " HP: (" + healthPoints + "/" + maxHealthPoints + ")  Shield: " + shield + "  Status Effects:";
+        if (burnTrue()) {
+            display += " Burn(" + ailments.get("Burn") + ")";
+        }
+        if (freezeTrue()) {
+            display += " Frozen(1)";
+        }
+        if (bleedTrue()) {
+            display += " Bleed(" + ailments.get("Bleed") + ")";
+        }
+        if (ailments.get("Poison") != 0) {
+            display += " Poison(" + ailments.get("Poison") + ")";
+        }
+        if (ailments.get("Strength") != 0) {
+            display += " Strength(" + ailments.get("Strength") + ")";
+        }
+        return name + " HP: (" + healthPoints + "/" + maxHealthPoints + ")  Shield: " + shield + "  Status Effects: ";
     }
 
 
@@ -203,6 +223,10 @@ public class EnemyCreator {
     }
 
     public boolean burnTrue() {
-        return ailments.get("burn") > 0;
+        return ailments.get("Burn") > 0;
     }
+    public boolean bleedTrue() {
+        return ailments.get("Bleed") > 0;
+    }
+
 }
