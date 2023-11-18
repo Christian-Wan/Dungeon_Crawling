@@ -1,6 +1,9 @@
+import jdk.jshell.Snippet;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Scanner;
 
 public class Player {
@@ -14,6 +17,7 @@ public class Player {
     private int playerHealth, playerMaxHealth;
     private int playerEnergy, playerStartEnergy;
     private int shield = 0;
+    private HashMap<String, Integer> statusEffects = new HashMap<String, Integer>();
 
     public Player(String choice) {
         choice = choice.toLowerCase();
@@ -42,6 +46,11 @@ public class Player {
         }
         turnToObject(playerDeckString, playerDeck);
         turnToObject(obtainableCardsString, obtainableCards);
+        statusEffects.put("Burn", 0);
+        statusEffects.put("Freeze", 0);
+        statusEffects.put("Bleed", 0);
+        statusEffects.put("Poison", 0);
+        statusEffects.put("Strength", 0);
         s.close();
     }
 
@@ -98,7 +107,7 @@ public class Player {
         playerDeck.add(new Cards(cardName));
     }
     public void deckToHand() {
-        while (playerHand.size() < 7) {
+        while (playerHand.size() < 6) {
             if (playerDeck.isEmpty()) {
                 discardToDeck();
             }
@@ -128,7 +137,23 @@ public class Player {
         return hand;
     }
     public String toString() {
-        return name + "\nHP: " + playerHealth + "/" + playerMaxHealth + "  Energy: (" + playerEnergy + "/" + playerStartEnergy + ")  Shield: " + shield;
+        String display = name + "\nHP: (" + playerHealth + "/" + playerMaxHealth + ")  Energy: (" + playerEnergy + "/" + playerStartEnergy + ")  Shield: " + shield + "  Status Effects:";
+        if (burnTrue()) {
+            display += " Burn(" + statusEffects.get("Burn") + ")";
+        }
+        if (freezeTrue()) {
+            display += " Frozen(1)";
+        }
+        if (bleedTrue()) {
+            display += " Bleed(" + statusEffects.get("Bleed") + ")";
+        }
+        if (statusEffects.get("Poison") != 0) {
+            display += " Poison(" + statusEffects.get("Poison") + ")";
+        }
+        if (statusEffects.get("Strength") != 0) {
+            display += " Strength(" + statusEffects.get("Strength") + ")";
+        }
+        return display;
     }
 
     public String attackDisplay(String enemyName, int damage, String attackType) {
@@ -165,5 +190,48 @@ public class Player {
         playerDeck.add(obtainableCards.get(choice));
     }
 
+    public void doBurn() {
+        changePlayerHealth(statusEffects.get("Burn"));
+    }
+    public boolean freezeTrue() {
+        return statusEffects.get("Freeze") == 1;
+    }
+    public void doBleed() {
+        changePlayerHealth((statusEffects.get("Bleed")));
+    }
+    public void doPoison() {
+        changePlayerHealth(statusEffects.get("Poison"));
+    }
+    public int getStrength() {
+        return statusEffects.get("Strength");
+    }
+    public boolean burnTrue() {
+        return statusEffects.get("Burn") > 0;
+    }
+    public boolean bleedTrue() {
+        return statusEffects.get("Bleed") > 0;
+    }
+    public void resetStatusEffects() {
+        statusEffects.replace("Burn", statusEffects.get("Burn"), 0);
+        statusEffects.replace("Freeze", statusEffects.get("Freeze"), 0);
+        statusEffects.replace("Bleed", statusEffects.get("Bleed"), 0);
+    }
+    public String applyStatusPrint(String enemyName, String statusName, int statusEffectiveness) {
+        return "You applied " + statusEffectiveness + " " + statusName + " to " + enemyName;
+    }
+    public void doStatusEffects() {
+        if (burnTrue()) {
+            doBurn();
+        }
+        if (bleedTrue()) {
+            doBleed();
+        }
+        if (statusEffects.get("Poison") != 0) {
+            doPoison();
+        }
+    }
+    public void addStatusEffect(String status, int amount) {
+        statusEffects.replace(status, statusEffects.get(status), statusEffects.get(status) + amount);
+    }
 
 }

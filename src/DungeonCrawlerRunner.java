@@ -1,10 +1,13 @@
 import java.sql.SQLOutput;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Scanner;
 
 public class DungeonCrawlerRunner {
     public static void main(String[] args) {
         Scanner s = new Scanner(System.in);
         String playerChoice;
+        int random;
         Dungeon play;
 
 
@@ -55,7 +58,13 @@ public class DungeonCrawlerRunner {
                 badRoom1();
             }
             else if (room.equals("Good")) {
-                goodRoom1();
+                random = (int) (Math.random() * 2) + 1;
+                if (random == 1) {
+                    goodRoom1();
+                }
+                else {
+                    goodRoom2();
+                }
             }
             else if (room.equals("Boss")) {
                 bossRoom();
@@ -77,6 +86,13 @@ public class DungeonCrawlerRunner {
     static EnemyCreator enemy2 = new EnemyCreator();
     static EnemyCreator enemy3 = new EnemyCreator();
     static EnemyCreator boss = new EnemyCreator("");
+
+    public static void doWhatIWant() {
+        System.out.println(enemy1.getDefenseMoveTraits());
+        enemy1.getAttack();
+        System.out.println(Arrays.toString(enemy1.getCurrentAttack().keySet().toArray()).substring(1, Arrays.toString(enemy1.getCurrentAttack().keySet().toArray()).length() - 1));
+        System.out.println(enemy1.getDefenseTraitEffectiveness());
+    }
 
     public static void importPlayer(String choice) {
         player = new Player(choice);
@@ -196,10 +212,25 @@ public class DungeonCrawlerRunner {
                 }
                 int damage = player.getPlayerHand().get(choice).getEffectiveness();
                 if (player.attackType(choice).equals("attack")) {
+                    damage += player.getStrength();
+                    if (player.bleedTrue()) {
+                        damage = (int) (damage * .75);
+                    }
+                    int originalDamage = damage;
+                    if (enemy1.getShield() != 0) {
+                        if (damage >= enemy1.getShield()) {
+                            damage -= enemy1.getShield();
+                            enemy1.changeShield(-enemy1.getShield());
+                        }
+                        else {
+                            enemy1.changeShield(-damage);
+                            damage = 0;
+                        }
+                    }
                     enemy1.changeHealth(damage);
-                    System.out.println(player.attackDisplay(enemy1.getName(), damage, player.attackType(choice)));
+                    System.out.println(player.attackDisplay(enemy1.getName(), originalDamage, player.attackType(choice)));
                 }
-                else if (player.attackType(choice).equals("defend/heal")) { //don't know if this works properly
+                else if (player.attackType(choice).equals("defend/heal")) {
                     if (player.getPlayerHealth() + damage > player.getPlayerMaxHealth()) {
                         damage = player.getPlayerMaxHealth() - player.getPlayerHealth(); //Makes sure that player doesn't go over their max hp
                     }
@@ -208,35 +239,65 @@ public class DungeonCrawlerRunner {
                     System.out.println(player.attackDisplay(enemy1.getName(), damage, player.attackType(choice)));
                 }
                 else {
+                    if (player.burnTrue()) {
+                        damage = (int) (damage * .75);
+                    }
                     player.changePlayerShield(damage);
                     System.out.println(player.attackDisplay(enemy1.getName(), damage, player.attackType(choice)));
+                }
+
+                if (!player.getPlayerHand().get(choice).getTraitName(0).equals("none")) { //apply status effects
+                    for (int i = 0; i < player.getPlayerHand().get(choice).getTraits().size(); i++) {
+                        System.out.println(player.applyStatusPrint(enemy1.getName(), player.getPlayerHand().get(choice).getTraitName(i), player.getPlayerHand().get(choice).getTraitEffectiveness(i)));
+                        enemy1.addStatusEffect(player.getPlayerHand().get(choice).getTraitName(i), player.getPlayerHand().get(choice).getTraitEffectiveness(i));
+                    }
                 }
                 player.changePlayerEnergy(player.getPlayerEnergy() - player.getActiveCard(choice).getEnergyCost()); // decreases the players energy by the amount the card costs
                 player.handToDiscard(choice);
             }
 
-
             for (int i = 0; i < player.getPlayerHand().size(); i++) { //Sends the players remaining hand to discard
                 player.handToDiscard(i);
             }
 
+            player.resetStatusEffects();
+            enemy1.doStatusEffects();
+            System.out.print(enemy1.statusPrint());
+            enemy1.changeShield(-enemy1.getShield()); //resets shield to 0 for enemy
 
-            if (enemy1.getHealthPoints() > 0) {
+
+
+            if (enemy1.getHealthPoints() > 0 && !enemy1.freezeTrue()) {
                 enemy1.getAttack();
                 System.out.println(enemy1.enemyAttackPrint());
 
                 if (enemy1.enemyAttackIsAttack()) {
                     int damage = enemy1.getEffectiveness();
+                    damage += enemy1.getStrength();
+                    if (enemy1.bleedTrue()) {
+                        damage = (int) (damage * .75);
+                    }
 
                     while (player.getShield() > 0 && damage != 0) {
                         player.changePlayerShield(-1);
                         damage--;
                     }
                     player.changePlayerHealth(damage);
-
+                    if (!enemy1.getAttackTraitName().equals("none") && !enemy1.getAttackTraitName().equals("Strength")) {
+                        System.out.println(enemy1.applyStatusPrint(enemy1.getAttackTraitName(), enemy1.getAttackTraitEffectiveness()));
+                        player.addStatusEffect(enemy1.getAttackTraitName(), enemy1.getAttackTraitEffectiveness());
+                    }
+                    else if (!enemy1.getAttackTraitName().equals("none") && enemy1.getAttackTraitName().equals("Strength")) {
+                        System.out.println(enemy1.getName() + " raised its strength by " + enemy1.getAttackTraitEffectiveness());
+                        enemy1.addStatusEffect(enemy1.getAttackTraitName(), enemy1.getAttackTraitEffectiveness());
+                    }
                 } else {
                     if (enemy1.getCurrentAttack().containsKey("shields")) {
-                        enemy1.changeShield(enemy1.getEffectiveness());
+                        int effectiveness = enemy1.getEffectiveness();
+                        if (enemy1.bleedTrue()) {
+                            effectiveness = (int) (effectiveness * .75);
+                        }
+                        enemy1.changeShield(effectiveness);
                     }
                     else {
                         if (enemy1.getHealthPoints() + enemy1.getEffectiveness() > enemy1.getMaxHealthPoints()) {
@@ -245,9 +306,21 @@ public class DungeonCrawlerRunner {
 
                         enemy1.changeHealth(-enemy1.getEffectiveness());
                     }
+                    if (!enemy1.getDefenseTraitName().equals("none") && !enemy1.getDefenseTraitName().equals("Strength")) {
+                        System.out.println(enemy1.applyStatusPrint(enemy1.getDefenseTraitName(), enemy1.getDefenseTraitEffectiveness()));
+                        player.addStatusEffect(enemy1.getDefenseTraitName(), enemy1.getDefenseTraitEffectiveness());
+                    }
+                    else if (!enemy1.getDefenseTraitName().equals("none") && enemy1.getDefenseTraitName().equals("Strength")) {
+                        System.out.println(enemy1.getName() + " raised its strength by " + enemy1.getDefenseTraitEffectiveness());
+                        enemy1.addStatusEffect(enemy1.getDefenseTraitName(), enemy1.getDefenseTraitEffectiveness());
+                    }
                 }
             }
-
+            else if (enemy1.getHealthPoints() <= 0) {
+                System.out.println(enemy1.getName() + " has died");
+            }
+            enemy1.resetStatusEffects();
+            player.doStatusEffects();
         }
         System.out.println("-------------------");
         if (player.getPlayerHealth() > 0) {
@@ -355,7 +428,8 @@ public class DungeonCrawlerRunner {
         boolean energyCheck;
         Scanner s = new Scanner(System.in);
         int choice = 0;
-        System.out.println("You enter the final room");
+        boss = new EnemyCreator("");
+        System.out.println("You enter a room with a " + boss.getName());
 
 
         while(boss.getHealthPoints() > 0 && player.getPlayerHealth() > 0) {
@@ -398,8 +472,6 @@ public class DungeonCrawlerRunner {
                     }
                     else if (choice != -2){
                         if (player.getActiveCard(choice).getEnergyCost() <= player.getPlayerEnergy()) {
-                            System.out.println("Card cost: " + player.getActiveCard(choice).getEnergyCost());
-                            System.out.println("Player: " + player.getPlayerEnergy());
                             energyCheck = true;
                         }
                         else {
@@ -425,10 +497,25 @@ public class DungeonCrawlerRunner {
                 }
                 int damage = player.getPlayerHand().get(choice).getEffectiveness();
                 if (player.attackType(choice).equals("attack")) {
+                    damage += player.getStrength();
+                    if (player.bleedTrue()) {
+                        damage = (int) (damage / .25);
+                    }
+                    int originalDamage = damage;
+                    if (boss.getShield() != 0) {
+                        if (damage >= boss.getShield()) {
+                            damage -= boss.getShield();
+                            boss.changeShield(-boss.getShield());
+                        }
+                        else {
+                            boss.changeShield(-damage);
+                            damage = 0;
+                        }
+                    }
                     boss.changeHealth(damage);
-                    System.out.println(player.attackDisplay(boss.getName(), damage, player.attackType(choice)));
+                    System.out.println(player.attackDisplay(boss.getName(), originalDamage, player.attackType(choice)));
                 }
-                else if (player.attackType(choice).equals("defend/heal")) { //don't know if this works properly
+                else if (player.attackType(choice).equals("defend/heal")) {
                     if (player.getPlayerHealth() + damage > player.getPlayerMaxHealth()) {
                         damage = player.getPlayerMaxHealth() - player.getPlayerHealth(); //Makes sure that player doesn't go over their max hp
                     }
@@ -437,8 +524,18 @@ public class DungeonCrawlerRunner {
                     System.out.println(player.attackDisplay(boss.getName(), damage, player.attackType(choice)));
                 }
                 else {
+                    if (player.burnTrue()) {
+                        damage = (int) (damage / .25);
+                    }
                     player.changePlayerShield(damage);
                     System.out.println(player.attackDisplay(boss.getName(), damage, player.attackType(choice)));
+                }
+
+                if (!player.getPlayerHand().get(choice).getTraitName(0).equals("none")) { //apply status effects
+                    for (int i = 0; i < player.getPlayerHand().get(choice).getTraits().size(); i++) {
+                        System.out.println(player.applyStatusPrint(boss.getName(), player.getPlayerHand().get(choice).getTraitName(i), player.getPlayerHand().get(choice).getTraitEffectiveness(i)));
+                        boss.addStatusEffect(player.getPlayerHand().get(choice).getTraitName(i), player.getPlayerHand().get(choice).getTraitEffectiveness(i));
+                    }
                 }
                 player.changePlayerEnergy(player.getPlayerEnergy() - player.getActiveCard(choice).getEnergyCost()); // decreases the players energy by the amount the card costs
                 player.handToDiscard(choice);
@@ -448,12 +545,22 @@ public class DungeonCrawlerRunner {
             for (int i = 0; i < player.getPlayerHand().size(); i++) { //Sends the players remaining hand to discard
                 player.handToDiscard(i);
             }
-            if (boss.getHealthPoints() > 0) {
+
+            boss.doStatusEffects();
+            boss.changeShield(-boss.getShield()); //resets shield to 0 for enemy
+            System.out.print(boss.statusPrint());
+
+
+            if (boss.getHealthPoints() > 0 && !boss.freezeTrue()) {
                 boss.getAttack();
                 System.out.println(boss.enemyAttackPrint());
 
                 if (boss.enemyAttackIsAttack()) {
                     int damage = boss.getEffectiveness();
+                    damage += boss.getStrength();
+                    if (boss.bleedTrue()) {
+                        damage = (int) (damage / .25);
+                    }
 
                     while (player.getShield() > 0 && damage != 0) {
                         player.changePlayerShield(-1);
@@ -462,15 +569,26 @@ public class DungeonCrawlerRunner {
                     player.changePlayerHealth(damage);
 
                 } else {
-                    if (boss.getHealthPoints() + boss.getEffectiveness() > boss.getMaxHealthPoints()) {
-                        boss.stopOverHeal();
+                    if (boss.getCurrentAttack().containsKey("shields")) {
+                        int effectiveness = boss.getEffectiveness();
+                        if (boss.bleedTrue()) {
+                            effectiveness = (int) (effectiveness / .25);
+                        }
+                        boss.changeShield(effectiveness);
                     }
+                    else {
+                        if (boss.getHealthPoints() + boss.getEffectiveness() > boss.getMaxHealthPoints()) {
+                            boss.stopOverHeal();
+                        }
 
-                    boss.changeHealth(-boss.getEffectiveness());
+                        boss.changeHealth(-boss.getEffectiveness());
+                    }
                 }
             }
-
+            else if (boss.getHealthPoints() <= 0) {
+                System.out.println(boss.getName() + " has died");
+            }
+            boss.resetStatusEffects();
         }
-
     }
 }

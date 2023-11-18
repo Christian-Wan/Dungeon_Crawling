@@ -1,6 +1,8 @@
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Scanner;
 
 public class Cards {
@@ -9,7 +11,7 @@ public class Cards {
 
     private int effectiveness;
 
-    private ArrayList<String> traits = new ArrayList<String>();
+    private ArrayList<HashMap<String, String>> traits = new ArrayList<HashMap<String, String>>();
 
     private String description;
 
@@ -37,7 +39,10 @@ public class Cards {
         String line = s.nextLine();
         String[] options = line.split(", ");
         for (int i = 0; i < options.length; i++) {
-            traits.add(options[i]);
+            String[] singleMove = options[i].split(" ");
+            HashMap<String, String> thing =  new HashMap<String, String>();
+            thing.put(singleMove[0], singleMove[1]);
+            traits.add(thing);
         }
         s.close();
     }
@@ -62,14 +67,14 @@ public class Cards {
         return effectiveness;
     }
 
-    public ArrayList<String> getTraits() {
+    public ArrayList<HashMap<String, String>> getTraits() {
         return traits;
     }
-
-    public static int burn() {
-        return (int) (Math.random() * 3) + 3;
+    public String getTraitName(int index) {
+        return Arrays.toString(traits.get(index).keySet().toArray()).substring(1, Arrays.toString(traits.get(index).keySet().toArray()).length() - 1);
     }
-
-
+    public int getTraitEffectiveness(int index) {
+        return Integer.parseInt(traits.get(index).get(getTraitName(index)));
+    }
 
 }

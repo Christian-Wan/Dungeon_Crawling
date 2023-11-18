@@ -1,5 +1,6 @@
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Scanner;
 
@@ -12,7 +13,7 @@ public class EnemyCreator {
     private HashMap<String, Integer> defenseMove = new HashMap<String, Integer>();
     private HashMap<String, String[]> defenseMoveTraits = new HashMap<String, String[]>();
     private HashMap<String, Integer> currentAttack = new HashMap<String, Integer>();
-    private HashMap<String, Integer> ailments = new HashMap<String, Integer>();
+    private HashMap<String, Integer> statusEffects = new HashMap<String, Integer>();
     private int shield = 0;
 
     public EnemyCreator() {
@@ -33,14 +34,15 @@ public class EnemyCreator {
             String[] singleMove = options[i].split(" ");
             attackMove.put(singleMove[0], Integer.parseInt(singleMove[1]));
             }
-        //Maybe this works
-//        line = s.nextLine();
-//        options = line.split(", ");
-//        for (int i = 0; i < options.length; i++) {
-//            String[] singleMove = options[i].split(" ");
-//            String[] traits = {singleMove[1], singleMove[2]};
-//            attackMoveTraits.put(singleMove[0], traits);
-//        }
+
+//adds traits to attacks
+        line = s.nextLine();
+        options = line.split(", ");
+        for (int i = 0; i < options.length; i++) {
+            String[] singleMove = options[i].split(" ");
+            String[] traits = {singleMove[1], singleMove[2]};
+            attackMoveTraits.put(singleMove[0], traits);
+        }
 
         line = s.nextLine();
         options = line.split(", ");
@@ -48,11 +50,20 @@ public class EnemyCreator {
             String[] singleMove = options[i].split(" ");
             defenseMove.put(singleMove[0], Integer.parseInt(singleMove[1]));
         }
-        ailments.put("Burn", 0);
-        ailments.put("Freeze", 0);
-        ailments.put("Bleed", 0);
-        ailments.put("Poison", 0);
-        ailments.put("Strength", 0);
+
+        line = s.nextLine();
+        options = line.split(", ");
+        for (int i = 0; i < options.length; i++) {
+            String[] singleMove = options[i].split(" ");
+            String[] traits = {singleMove[1], singleMove[2]};
+            defenseMoveTraits.put(singleMove[0], traits);
+        }
+
+        statusEffects.put("Burn", 0);
+        statusEffects.put("Freeze", 0);
+        statusEffects.put("Bleed", 0);
+        statusEffects.put("Poison", 0);
+        statusEffects.put("Strength", 0);
         s.close();
     }
 
@@ -80,11 +91,11 @@ public class EnemyCreator {
             String[] singleMove = options[i].split(" ");
             defenseMove.put(singleMove[0], Integer.parseInt(singleMove[1]));
         }
-        ailments.put("Burn", 0);
-        ailments.put("Freeze", 0);
-        ailments.put("Bleed", 0);
-        ailments.put("Poison", 0);
-        ailments.put("Strength", 0);
+        statusEffects.put("Burn", 0);
+        statusEffects.put("Freeze", 0);
+        statusEffects.put("Bleed", 0);
+        statusEffects.put("Poison", 0);
+        statusEffects.put("Strength", 0);
         s.close();
     }
     public void changeHealth(int damage) {
@@ -172,61 +183,117 @@ public class EnemyCreator {
         return currentAttack.get(attackName);
     }
 
-    public void addAilment() { //need to make the to string print out the ailments
 
-    }
-
-    public void doAilments() {
-
+    public void doStatusEffects() {
+        if (burnTrue()) {
+            doBurn();
+        }
+        if (bleedTrue()) {
+            doBleed();
+        }
+        if (statusEffects.get("Poison") != 0) {
+            doPoison();
+        }
     }
 
     public String toString() {
         String display = name + " HP: (" + healthPoints + "/" + maxHealthPoints + ")  Shield: " + shield + "  Status Effects:";
         if (burnTrue()) {
-            display += " Burn(" + ailments.get("Burn") + ")";
+            display += " Burn(" + statusEffects.get("Burn") + ")";
         }
         if (freezeTrue()) {
             display += " Frozen(1)";
         }
         if (bleedTrue()) {
-            display += " Bleed(" + ailments.get("Bleed") + ")";
+            display += " Bleed(" + statusEffects.get("Bleed") + ")";
         }
-        if (ailments.get("Poison") != 0) {
-            display += " Poison(" + ailments.get("Poison") + ")";
+        if (statusEffects.get("Poison") != 0) {
+            display += " Poison(" + statusEffects.get("Poison") + ")";
         }
-        if (ailments.get("Strength") != 0) {
-            display += " Strength(" + ailments.get("Strength") + ")";
+        if (statusEffects.get("Strength") != 0) {
+            display += " Strength(" + statusEffects.get("Strength") + ")";
         }
-        return name + " HP: (" + healthPoints + "/" + maxHealthPoints + ")  Shield: " + shield + "  Status Effects: ";
-    }
-
-
-
-    public void doBurn() {
-        changeHealth(ailments.get("Burn"));
-    }
-    public boolean freezeTrue() {
-        return ailments.get("Freeze") == 1;
-    }
-    public void doBleed() {
-        changeHealth((ailments.get("Bleed")));
-    }
-    public void doPoison() {
-        changeHealth(ailments.get("Poison"));
-    }
-    public int getStrength() {
-        return ailments.get("Strength");
+        return display;
     }
 
     public void changeShield(int value) {
         shield += value;
     }
 
+    public void doBurn() {
+        changeHealth(statusEffects.get("Burn"));
+    }
+    public boolean freezeTrue() {
+        return statusEffects.get("Freeze") == 1;
+    }
+    public void doBleed() {
+        changeHealth((statusEffects.get("Bleed")));
+    }
+    public void doPoison() {
+        changeHealth(statusEffects.get("Poison"));
+    }
+    public int getStrength() {
+        return statusEffects.get("Strength");
+    }
     public boolean burnTrue() {
-        return ailments.get("Burn") > 0;
+        return statusEffects.get("Burn") > 0;
     }
     public boolean bleedTrue() {
-        return ailments.get("Bleed") > 0;
+        return statusEffects.get("Bleed") > 0;
     }
 
+    public int getShield() {
+        return shield;
+    }
+
+    public HashMap<String, String[]> getAttackMoveTraits() {
+        return attackMoveTraits;
+    }
+
+    public HashMap<String, String[]> getDefenseMoveTraits() {
+        return defenseMoveTraits;
+    }
+
+    public String statusPrint() {
+        String result = "";
+        if (burnTrue()) {
+            result += name + " burns for " + statusEffects.get("Burn") + " damage\n";
+        }
+        if (bleedTrue()) {
+            result += name + " bleeds for " + statusEffects.get("Bleed") + " damage\n";
+        }
+        if (statusEffects.get("Poison") != 0) {
+            result += name + " is poisoned for " + statusEffects.get("Poison") + " damage\n";
+        }
+        if (freezeTrue()) {
+            result += name + " was frozen\n";
+        }
+
+        return result;
+    }
+
+    public String applyStatusPrint(String statusName, int statusEffectiveness) {
+        return name + " applied " + statusEffectiveness + " " + statusName + " to you";
+    }
+
+    public void resetStatusEffects() {
+        statusEffects.replace("Burn", statusEffects.get("Burn"), 0);
+        statusEffects.replace("Freeze", statusEffects.get("Freeze"), 0);
+        statusEffects.replace("Bleed", statusEffects.get("Bleed"), 0);
+    }
+    public void addStatusEffect(String status, int amount) {
+        statusEffects.replace(status, statusEffects.get(status), statusEffects.get(status) + amount);
+    }
+    public String getAttackTraitName() {
+        return attackMoveTraits.get(Arrays.toString(currentAttack.keySet().toArray()).substring(1, Arrays.toString(currentAttack.keySet().toArray()).length() - 1))[0];
+    }
+    public int getAttackTraitEffectiveness() {
+        return Integer.parseInt(attackMoveTraits.get(Arrays.toString(currentAttack.keySet().toArray()).substring(1, Arrays.toString(currentAttack.keySet().toArray()).length() - 1))[1]);
+    }
+    public String getDefenseTraitName() {
+        return defenseMoveTraits.get(Arrays.toString(currentAttack.keySet().toArray()).substring(1, Arrays.toString(currentAttack.keySet().toArray()).length() - 1))[0];
+    }
+    public int getDefenseTraitEffectiveness() {
+        return Integer.parseInt(defenseMoveTraits.get(Arrays.toString(currentAttack.keySet().toArray()).substring(1, Arrays.toString(currentAttack.keySet().toArray()).length() - 1))[1]);
+    }
 }
