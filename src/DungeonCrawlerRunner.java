@@ -419,7 +419,7 @@ public class DungeonCrawlerRunner {
         if (choice == 1) {
             player.changePlayerHealth(-heal);
             if (player.getPlayerHealth() > player.getPlayerMaxHealth()) {
-                player.changePlayerHealth(player.getPlayerMaxHealth() - player.getPlayerHealth());
+                player.changePlayerHealth(player.getPlayerHealth() - player.getPlayerMaxHealth());
             }
         }
     }
