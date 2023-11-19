@@ -64,6 +64,7 @@ public class EnemyCreator {
         statusEffects.put("Bleed", 0);
         statusEffects.put("Poison", 0);
         statusEffects.put("Strength", 0);
+        statusEffects.put("Self", 0);
         s.close();
     }
 
@@ -85,17 +86,37 @@ public class EnemyCreator {
             String[] singleMove = options[i].split(" ");
             attackMove.put(singleMove[0], Integer.parseInt(singleMove[1]));
         }
+
+//adds traits to attacks
+        line = s.nextLine();
+        options = line.split(", ");
+        for (int i = 0; i < options.length; i++) {
+            String[] singleMove = options[i].split(" ");
+            String[] traits = {singleMove[1], singleMove[2]};
+            attackMoveTraits.put(singleMove[0], traits);
+        }
+
         line = s.nextLine();
         options = line.split(", ");
         for (int i = 0; i < options.length; i++) {
             String[] singleMove = options[i].split(" ");
             defenseMove.put(singleMove[0], Integer.parseInt(singleMove[1]));
         }
+
+        line = s.nextLine();
+        options = line.split(", ");
+        for (int i = 0; i < options.length; i++) {
+            String[] singleMove = options[i].split(" ");
+            String[] traits = {singleMove[1], singleMove[2]};
+            defenseMoveTraits.put(singleMove[0], traits);
+        }
+
         statusEffects.put("Burn", 0);
         statusEffects.put("Freeze", 0);
         statusEffects.put("Bleed", 0);
         statusEffects.put("Poison", 0);
         statusEffects.put("Strength", 0);
+        statusEffects.put("Self", 0);
         s.close();
     }
     public void changeHealth(int damage) {
@@ -139,15 +160,13 @@ public class EnemyCreator {
         currentAttack = tempMap;
     }
 
-    public String enemyAttackPrint() {
+    public String enemyAttackPrint(int effectiveness) {
         String attackName = "";
         String attackStatement = "";
-        int damage = 0;
+        int damage = effectiveness;
         Object[] moveArray = currentAttack.keySet().toArray();
         attackName = moveArray[0].toString();
-        damage = currentAttack.get(attackName);
 
-        String statement = "";
         if (enemyAttackIsAttack()) {
             attackStatement = "Enemy " + name + " " + attackName + " you for " + damage + " damage!";
         }
@@ -157,12 +176,12 @@ public class EnemyCreator {
         return attackStatement;
     }
 
-    public void stopOverHeal() {
-        String attackName = "";
-        int healing = maxHealthPoints - healthPoints;
-        Object[] moveArray = currentAttack.keySet().toArray();
-        attackName = moveArray[0].toString();
-        currentAttack.replace(attackName, currentAttack.get(attackName), healing);
+    public int stopOverHeal() {
+        int healing = getEffectiveness();
+        if (healthPoints + getEffectiveness() > maxHealthPoints) {
+            healing = maxHealthPoints - healthPoints;
+        }
+        return healing;
     }
 
     public boolean enemyAttackIsAttack() {
@@ -295,5 +314,9 @@ public class EnemyCreator {
     }
     public int getDefenseTraitEffectiveness() {
         return Integer.parseInt(defenseMoveTraits.get(Arrays.toString(currentAttack.keySet().toArray()).substring(1, Arrays.toString(currentAttack.keySet().toArray()).length() - 1))[1]);
+    }
+
+    public boolean isAlive() {
+        return healthPoints > 0;
     }
 }

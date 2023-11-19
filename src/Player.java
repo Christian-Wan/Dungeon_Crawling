@@ -51,6 +51,7 @@ public class Player {
         statusEffects.put("Bleed", 0);
         statusEffects.put("Poison", 0);
         statusEffects.put("Strength", 0);
+        statusEffects.put("Focus", 0);
         s.close();
     }
 
@@ -153,6 +154,9 @@ public class Player {
         if (statusEffects.get("Strength") != 0) {
             display += " Strength(" + statusEffects.get("Strength") + ")";
         }
+        if (statusEffects.get("Focus") != 0) {
+            display += " Focus(" + statusEffects.get("Focus") + ")";
+        }
         return display;
     }
 
@@ -211,10 +215,21 @@ public class Player {
     public boolean bleedTrue() {
         return statusEffects.get("Bleed") > 0;
     }
+    public int getFocus() {
+        return statusEffects.get("Focus");
+    }
     public void resetStatusEffects() {
         statusEffects.replace("Burn", statusEffects.get("Burn"), 0);
         statusEffects.replace("Freeze", statusEffects.get("Freeze"), 0);
         statusEffects.replace("Bleed", statusEffects.get("Bleed"), 0);
+    }
+
+    public void fullResetStatusEffects() {
+        statusEffects.replace("Burn", statusEffects.get("Burn"), 0);
+        statusEffects.replace("Freeze", statusEffects.get("Freeze"), 0);
+        statusEffects.replace("Bleed", statusEffects.get("Bleed"), 0);
+        statusEffects.replace("Strength", statusEffects.get("Strength"), 0);
+        statusEffects.replace("Focus", statusEffects.get("Focus"), 0);
     }
     public String applyStatusPrint(String enemyName, String statusName, int statusEffectiveness) {
         return "You applied " + statusEffectiveness + " " + statusName + " to " + enemyName;
@@ -232,6 +247,21 @@ public class Player {
     }
     public void addStatusEffect(String status, int amount) {
         statusEffects.replace(status, statusEffects.get(status), statusEffects.get(status) + amount);
+    }
+
+    public String statusPrint() {
+        String result = "";
+        if (burnTrue()) {
+            result += "You burn for " + statusEffects.get("Burn") + " damage\n";
+        }
+        if (bleedTrue()) {
+            result += "You bleed for " + statusEffects.get("Bleed") + " damage\n";
+        }
+        if (statusEffects.get("Poison") != 0) {
+            result += "You are poisoned for " + statusEffects.get("Poison") + " damage\n";
+        }
+
+        return result;
     }
 
 }

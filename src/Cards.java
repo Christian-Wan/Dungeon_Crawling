@@ -17,6 +17,7 @@ public class Cards {
 
     private int energyCost;
 
+    private String canTarget;
     
 
 
@@ -34,6 +35,7 @@ public class Cards {
         this.name = s.nextLine();
         this.type = s.nextLine();
         this.description = s.nextLine();
+        this.canTarget = s.nextLine();
         this.effectiveness = Integer.parseInt(s.nextLine());
         this.energyCost = Integer.parseInt(s.nextLine());
         String line = s.nextLine();
@@ -77,4 +79,7 @@ public class Cards {
         return Integer.parseInt(traits.get(index).get(getTraitName(index)));
     }
 
+    public String getCanTarget() {
+        return canTarget;
+    }
 }

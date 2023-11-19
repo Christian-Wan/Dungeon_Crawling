@@ -5,10 +5,11 @@ import java.util.Scanner;
 
 public class DungeonCrawlerRunner {
     public static void main(String[] args) {
+
         Scanner s = new Scanner(System.in);
-        String playerChoice;
-        int random;
-        Dungeon play;
+        String playerChoice; //A string that will be used
+        int random; //A variable that will be reused whenever math.random is needed
+        Dungeon play; //Dungeon object
 
 
         System.out.println("Welcome to Unique Game Title");
@@ -45,17 +46,27 @@ public class DungeonCrawlerRunner {
         String move;
 
 
-        while (player.getPlayerHealth() > 0 && boss.getHealthPoints() > 0) {
-            do {
+        while (player.getPlayerHealth() > 0 && boss.getHealthPoints() > 0) { //a while loop that runs the game until the player dies or beats the boss
+            do { //A loop that makes the player move until they reach a new room
                 System.out.println();
                 System.out.print("Choose Direction (Type the letter of the direction: n - North, e - East, s - South, w - West): ");
                 playerChoice = s.nextLine();
                 move = play.movePlayer(playerChoice);
                 System.out.println(move);
             } while (move.equals("You walk into a wall") || move.equals("That is not an option"));
+
             String room = play.runRoom();
-            if (room.equals("Bad")) {
-                badRoom1();
+            if (room.equals("Bad")) { //If the player enters a bad room they end up
+                random = (int) (Math.random() * 3) + 1;
+                if (random <= 5) {
+                    badRoom1();
+                }
+                else if (random >= 9) {
+                    badRoom3();
+                }
+                else {
+                    badRoom2();
+                }
             }
             else if (room.equals("Good")) {
                 random = (int) (Math.random() * 2) + 1;
@@ -74,13 +85,16 @@ public class DungeonCrawlerRunner {
             }
 
         }
-        if (player.getPlayerHealth() > 0) {
+
+
+        if (player.getPlayerHealth() > 0) { //determines if the player ended the game by dying or by defeating the boss
             System.out.println("VICTORY!");
         }
         else {
             System.out.println("DEFEAT!");
         }
     }
+
     static Player player;
     static EnemyCreator enemy1 = new EnemyCreator();
     static EnemyCreator enemy2 = new EnemyCreator();
@@ -98,7 +112,7 @@ public class DungeonCrawlerRunner {
         player = new Player(choice);
     }
 
-    public static void selectCard() {
+    private static void selectCard() {
         Scanner s = new Scanner(System.in);
         int choice = 0;
         int card1;
@@ -112,7 +126,7 @@ public class DungeonCrawlerRunner {
 
 
         System.out.println(
-                  "Pick a card:" +
+                  "Pick a card to add to your deck:" +
                 "\n1) " + player.getObtainableCards().get(card1).getName() + " (Cost: " + player.getObtainableCards().get(card1).getEnergyCost() + " Energy) - " + player.getObtainableCards().get(card1).getDescription() +
                 "\n2) " + player.getObtainableCards().get(card2).getName() + " (Cost: " + player.getObtainableCards().get(card2).getEnergyCost() + " Energy) - " + player.getObtainableCards().get(card2).getDescription() +
                 "\n3) " + player.getObtainableCards().get(card3).getName() + " (Cost: " + player.getObtainableCards().get(card3).getEnergyCost() + " Energy) - " + player.getObtainableCards().get(card3).getDescription());
@@ -138,7 +152,129 @@ public class DungeonCrawlerRunner {
             player.obtainableToDeck(card3);
         }
     }
+    private static void playerTurn(int choice, EnemyCreator enemy) {
+        int damage = player.getPlayerHand().get(choice).getEffectiveness();
+        if (player.attackType(choice).equals("attack")) {
+            damage += player.getStrength();
+            if (player.bleedTrue()) {
+                damage = (int) (damage * .75);
+            }
+            if (player.getName().equals("Rouge") && Math.random() * 100 < (20 + player.getFocus() * 10)) { //20% chance for the rouge class to crit whenever they attack
+                System.out.println("You critically hit the enemy!");
+                damage *= 2;
+            }
+            for (int i = 0; i < player.getPlayerHand().get(choice).getTraits().size(); i++) {
+                if (player.getPlayerHand().get(choice).getTraitName(i).equals("Self")) {
+                    System.out.println("You hurt yourself for " + player.getPlayerHand().get(choice).getTraitEffectiveness(i) + " damage");
+                    player.changePlayerHealth(player.getPlayerHand().get(choice).getTraitEffectiveness(i));
+                }
+            }
 
+            if (enemy.getShield() != 0) {
+                if (damage >= enemy.getShield()) {
+                    damage -= enemy.getShield();
+                    enemy.changeShield(-enemy.getShield());
+                } else {
+                    enemy.changeShield(-damage);
+                    damage = 0;
+                }
+            }
+            enemy.changeHealth(damage);
+            System.out.println(player.attackDisplay(enemy.getName(), damage, player.attackType(choice)));
+        } else if (player.attackType(choice).equals("defense/heal")) {
+            if (player.getPlayerHealth() + damage > player.getPlayerMaxHealth()) {
+                damage = player.getPlayerMaxHealth() - player.getPlayerHealth(); //Makes sure that player doesn't go over their max hp
+            }
+
+            player.changePlayerHealth(-damage);
+            System.out.println(player.attackDisplay(enemy.getName(), damage, player.attackType(choice)));
+        } else if (player.attackType(choice).equals("defense/shield")) {
+            if (player.burnTrue()) {
+                damage = (int) (damage * .75);
+            }
+            player.changePlayerShield(damage);
+            System.out.println(player.attackDisplay(enemy.getName(), damage, player.attackType(choice)));
+        } else {
+            System.out.println("You used " + player.getPlayerHand().get(choice).getName());
+        }
+
+        if (!player.getPlayerHand().get(choice).getTraitName(0).equals("none")) { //apply status effects to self or enemy
+            for (int i = 0; i < player.getPlayerHand().get(choice).getTraits().size(); i++) {
+                if (player.getPlayerHand().get(choice).getTraitName(i).equals("Strength") || player.getPlayerHand().get(choice).getTraitName(i).equals("Focus")) {
+                    System.out.println(player.applyStatusPrint("yourself", player.getPlayerHand().get(choice).getTraitName(i), player.getPlayerHand().get(choice).getTraitEffectiveness(i)));
+                    player.addStatusEffect(player.getPlayerHand().get(choice).getTraitName(i), player.getPlayerHand().get(choice).getTraitEffectiveness(i));
+                } else {
+                    System.out.println(player.applyStatusPrint(enemy.getName(), player.getPlayerHand().get(choice).getTraitName(i), player.getPlayerHand().get(choice).getTraitEffectiveness(i)));
+                    enemy.addStatusEffect(player.getPlayerHand().get(choice).getTraitName(i), player.getPlayerHand().get(choice).getTraitEffectiveness(i));
+                }
+            }
+        }
+        player.changePlayerEnergy(player.getPlayerEnergy() - player.getActiveCard(choice).getEnergyCost()); // decreases the players energy by the amount the card costs
+        player.handToDiscard(choice);
+    }
+    private static void enemyTurn(EnemyCreator enemy) {
+        enemy.doStatusEffects();
+        System.out.print(enemy.statusPrint());//
+        enemy.changeShield(-enemy.getShield()); //resets shield to 0 for enemy
+
+        if (enemy.getHealthPoints() > 0 && !enemy.freezeTrue()) {
+            enemy.getAttack();
+            int effectiveness = 0;
+
+            if (enemy.enemyAttackIsAttack()) {
+                effectiveness = enemy.getEffectiveness();
+                effectiveness += enemy.getStrength();
+                if (player.getName().equals("Rouge") && Math.random() * 100 < (20 + player.getFocus() * 5)) { //If player is a rouge then there is a 20% chance they dodge enemy attack
+                    effectiveness = 0;
+                    System.out.println("You dodged " + enemy.getName() + "'s attack");
+                }
+                else if (enemy.bleedTrue()) { //lowers enemy damage if they are afflicted with bleed debuff
+                    effectiveness = (int) (effectiveness * .75);
+                }
+                while (player.getShield() > 0 && effectiveness != 0) { //checks if player has a shield if they do then do damage to that instead
+                    player.changePlayerShield(-1);
+                    effectiveness--;
+                }
+                player.changePlayerHealth(effectiveness); //deals damage to the player
+                System.out.println(enemy.enemyAttackPrint(effectiveness));
+                if (!enemy.getAttackTraitName().equals("none") && !enemy.getAttackTraitName().equals("Strength")) {
+                    System.out.println(enemy.applyStatusPrint(enemy.getAttackTraitName(), enemy.getAttackTraitEffectiveness()));
+                    player.addStatusEffect(enemy.getAttackTraitName(), enemy.getAttackTraitEffectiveness());
+                }
+                else if (!enemy.getAttackTraitName().equals("none") && enemy.getAttackTraitName().equals("Strength")) {
+                    System.out.println(enemy.getName() + " raised its strength by " + enemy.getAttackTraitEffectiveness());
+                    enemy.addStatusEffect(enemy.getAttackTraitName(), enemy.getAttackTraitEffectiveness());
+                }
+            }
+            else {
+                if (enemy.getCurrentAttack().containsKey("shields")) {
+                    effectiveness = enemy.getEffectiveness();
+                    if (enemy.bleedTrue()) {
+                        effectiveness = (int) (effectiveness * .75);
+                    }
+                    enemy.changeShield(effectiveness);
+                }
+                else {
+                    effectiveness = enemy.stopOverHeal();
+
+                    enemy.changeHealth(-effectiveness);
+                }
+                System.out.println(enemy.enemyAttackPrint(effectiveness));
+                if (!enemy.getDefenseTraitName().equals("none") && !enemy.getDefenseTraitName().equals("Strength")) {
+                    System.out.println(enemy.applyStatusPrint(enemy.getDefenseTraitName(), enemy.getDefenseTraitEffectiveness()));
+                    player.addStatusEffect(enemy.getDefenseTraitName(), enemy.getDefenseTraitEffectiveness());
+                }
+                else if (!enemy.getDefenseTraitName().equals("none") && enemy.getDefenseTraitName().equals("Strength")) {
+                    System.out.println(enemy.getName() + " raised its strength by " + enemy.getDefenseTraitEffectiveness());
+                    enemy.addStatusEffect(enemy.getDefenseTraitName(), enemy.getDefenseTraitEffectiveness());
+                }
+            }
+        }
+        else if (enemy.getHealthPoints() <= 0) {
+            System.out.println(enemy.getName() + " has died");
+        }
+        enemy.resetStatusEffects();
+    }
     public static void badRoom1() {
         boolean energyCheck;
         Scanner s = new Scanner(System.in);
@@ -147,13 +283,13 @@ public class DungeonCrawlerRunner {
         System.out.println("You enter a room with a " + enemy1.getName());
 
 
-        while(enemy1.getHealthPoints() > 0 && player.getPlayerHealth() > 0) {
+        while (enemy1.getHealthPoints() > 0 && player.getPlayerHealth() > 0) { //entire room is in this while loop that goes between enemy and player
             player.changePlayerEnergy(player.getPlayerStartEnergy());
             player.deckToHand();
             player.changePlayerShield(-player.getShield());
 
 
-            while(!player.getPlayerHand().isEmpty() && enemy1.getHealthPoints() > 0) {
+            while (!player.getPlayerHand().isEmpty() && enemy1.getHealthPoints() > 0 && player.getPlayerHealth() > 0) { //loop that holds the players turn
                 energyCheck = false;
 
                 System.out.println("-------------------");
@@ -165,8 +301,7 @@ public class DungeonCrawlerRunner {
                 System.out.print("Which attack would you like to do (Choose a number from the list or -1 to end turn): ");
                 try {
                     choice = Integer.parseInt(s.nextLine()) - 1;
-                }
-                catch (NumberFormatException e) {
+                } catch (NumberFormatException e) {
                     choice = 9;
                 }
 
@@ -184,12 +319,10 @@ public class DungeonCrawlerRunner {
                         } catch (NumberFormatException e) {
                             choice = 9;
                         }
-                    }
-                    else if (choice != -2){
+                    } else if (choice != -2) {
                         if (player.getActiveCard(choice).getEnergyCost() <= player.getPlayerEnergy()) {
                             energyCheck = true;
-                        }
-                        else {
+                        } else {
                             System.out.print("Card costs too much energy (Choose a number from the list or -1 to end turn): ");
                             try {
                                 choice = Integer.parseInt(s.nextLine()) - 1;
@@ -197,138 +330,327 @@ public class DungeonCrawlerRunner {
                                 choice = 9;
                             }
                         }
-                    }
-                    else {
+                    } else {
                         energyCheck = true;
                     }
 
                 }
-
-
                 System.out.println("-------------------");
                 if (choice == -2) { //might need to get rid of the break statement
                     System.out.println("You end your turn");
                     break;
                 }
-                int damage = player.getPlayerHand().get(choice).getEffectiveness();
-                if (player.attackType(choice).equals("attack")) {
-                    damage += player.getStrength();
-                    if (player.bleedTrue()) {
-                        damage = (int) (damage * .75);
-                    }
-                    int originalDamage = damage;
-                    if (enemy1.getShield() != 0) {
-                        if (damage >= enemy1.getShield()) {
-                            damage -= enemy1.getShield();
-                            enemy1.changeShield(-enemy1.getShield());
-                        }
-                        else {
-                            enemy1.changeShield(-damage);
-                            damage = 0;
-                        }
-                    }
-                    enemy1.changeHealth(damage);
-                    System.out.println(player.attackDisplay(enemy1.getName(), originalDamage, player.attackType(choice)));
-                }
-                else if (player.attackType(choice).equals("defend/heal")) {
-                    if (player.getPlayerHealth() + damage > player.getPlayerMaxHealth()) {
-                        damage = player.getPlayerMaxHealth() - player.getPlayerHealth(); //Makes sure that player doesn't go over their max hp
-                    }
 
-                    player.changePlayerHealth(-damage);
-                    System.out.println(player.attackDisplay(enemy1.getName(), damage, player.attackType(choice)));
-                }
-                else {
-                    if (player.burnTrue()) {
-                        damage = (int) (damage * .75);
-                    }
-                    player.changePlayerShield(damage);
-                    System.out.println(player.attackDisplay(enemy1.getName(), damage, player.attackType(choice)));
-                }
 
-                if (!player.getPlayerHand().get(choice).getTraitName(0).equals("none")) { //apply status effects
-                    for (int i = 0; i < player.getPlayerHand().get(choice).getTraits().size(); i++) {
-                        System.out.println(player.applyStatusPrint(enemy1.getName(), player.getPlayerHand().get(choice).getTraitName(i), player.getPlayerHand().get(choice).getTraitEffectiveness(i)));
-                        enemy1.addStatusEffect(player.getPlayerHand().get(choice).getTraitName(i), player.getPlayerHand().get(choice).getTraitEffectiveness(i));
-                    }
-                }
-                player.changePlayerEnergy(player.getPlayerEnergy() - player.getActiveCard(choice).getEnergyCost()); // decreases the players energy by the amount the card costs
-                player.handToDiscard(choice);
+                playerTurn(choice, enemy1);
+
+
+
             }
-
             for (int i = 0; i < player.getPlayerHand().size(); i++) { //Sends the players remaining hand to discard
                 player.handToDiscard(i);
             }
 
-            player.resetStatusEffects();
-            enemy1.doStatusEffects();
-            System.out.print(enemy1.statusPrint());
-            enemy1.changeShield(-enemy1.getShield()); //resets shield to 0 for enemy
-
-
-
-            if (enemy1.getHealthPoints() > 0 && !enemy1.freezeTrue()) {
-                enemy1.getAttack();
-                System.out.println(enemy1.enemyAttackPrint());
-
-                if (enemy1.enemyAttackIsAttack()) {
-                    int damage = enemy1.getEffectiveness();
-                    damage += enemy1.getStrength();
-                    if (enemy1.bleedTrue()) {
-                        damage = (int) (damage * .75);
-                    }
-
-                    while (player.getShield() > 0 && damage != 0) {
-                        player.changePlayerShield(-1);
-                        damage--;
-                    }
-                    player.changePlayerHealth(damage);
-                    if (!enemy1.getAttackTraitName().equals("none") && !enemy1.getAttackTraitName().equals("Strength")) {
-                        System.out.println(enemy1.applyStatusPrint(enemy1.getAttackTraitName(), enemy1.getAttackTraitEffectiveness()));
-                        player.addStatusEffect(enemy1.getAttackTraitName(), enemy1.getAttackTraitEffectiveness());
-                    }
-                    else if (!enemy1.getAttackTraitName().equals("none") && enemy1.getAttackTraitName().equals("Strength")) {
-                        System.out.println(enemy1.getName() + " raised its strength by " + enemy1.getAttackTraitEffectiveness());
-                        enemy1.addStatusEffect(enemy1.getAttackTraitName(), enemy1.getAttackTraitEffectiveness());
-                    }
-                } else {
-                    if (enemy1.getCurrentAttack().containsKey("shields")) {
-                        int effectiveness = enemy1.getEffectiveness();
-                        if (enemy1.bleedTrue()) {
-                            effectiveness = (int) (effectiveness * .75);
-                        }
-                        enemy1.changeShield(effectiveness);
-                    }
-                    else {
-                        if (enemy1.getHealthPoints() + enemy1.getEffectiveness() > enemy1.getMaxHealthPoints()) {
-                            enemy1.stopOverHeal();
-                        }
-
-                        enemy1.changeHealth(-enemy1.getEffectiveness());
-                    }
-                    if (!enemy1.getDefenseTraitName().equals("none") && !enemy1.getDefenseTraitName().equals("Strength")) {
-                        System.out.println(enemy1.applyStatusPrint(enemy1.getDefenseTraitName(), enemy1.getDefenseTraitEffectiveness()));
-                        player.addStatusEffect(enemy1.getDefenseTraitName(), enemy1.getDefenseTraitEffectiveness());
-                    }
-                    else if (!enemy1.getDefenseTraitName().equals("none") && enemy1.getDefenseTraitName().equals("Strength")) {
-                        System.out.println(enemy1.getName() + " raised its strength by " + enemy1.getDefenseTraitEffectiveness());
-                        enemy1.addStatusEffect(enemy1.getDefenseTraitName(), enemy1.getDefenseTraitEffectiveness());
-                    }
-                }
-            }
-            else if (enemy1.getHealthPoints() <= 0) {
-                System.out.println(enemy1.getName() + " has died");
-            }
-            enemy1.resetStatusEffects();
             player.doStatusEffects();
+            System.out.print(player.statusPrint());
+            player.resetStatusEffects();
+
+            enemyTurn(enemy1);
+
+
+
         }
         System.out.println("-------------------");
         if (player.getPlayerHealth() > 0) {
             selectCard();
         }
-
     }
+    public static void badRoom2() {
+        boolean energyCheck;
+        Scanner s = new Scanner(System.in);
+        int choice = 0;
+        enemy1 = new EnemyCreator();
+        enemy2 = new EnemyCreator();
+        System.out.println("You enter a room with a " + enemy1.getName() + " and " + enemy2.getName());
 
+
+        while (enemy1.getHealthPoints() > 0 && player.getPlayerHealth() > 0 && enemy2.getHealthPoints() > 0) { //entire room is in this while loop that goes between enemy and player
+            player.changePlayerEnergy(player.getPlayerStartEnergy());
+            player.deckToHand();
+            player.changePlayerShield(-player.getShield());
+
+
+            while (!player.getPlayerHand().isEmpty() && enemy1.getHealthPoints() > 0 && player.getPlayerHealth() > 0 && enemy2.getHealthPoints() > 0) { //loop that holds the players turn
+                energyCheck = false;
+
+                System.out.println("-------------------");
+                if (enemy1.getHealthPoints() > 0) {
+                    System.out.println(enemy1.toString());
+                }
+                if (enemy2.getHealthPoints() > 0) {
+                    System.out.println(enemy2.toString());
+                }
+                System.out.println("-------------------");
+                System.out.println(player.toString());
+                System.out.println("-------------------");
+                System.out.println(player.displayHand());
+                System.out.print("Which attack would you like to do (Choose a number from the list or -1 to end turn): ");
+                try {
+                    choice = Integer.parseInt(s.nextLine()) - 1;
+                } catch (NumberFormatException e) {
+                    choice = 9;
+                }
+
+                if (InputValidation.integerValidate(0, (player.getPlayerHand().size() - 1), -2, choice)) {
+                    if (choice == -2 || player.getActiveCard(choice).getEnergyCost() < player.getPlayerEnergy()) {
+                        energyCheck = true;
+                    }
+                }
+
+                while (!InputValidation.integerValidate(0, (player.getPlayerHand().size() - 1), -2, choice) || energyCheck == false) {
+                    if (!InputValidation.integerValidate(0, (player.getPlayerHand().size() - 1), -2, choice)) {
+                        System.out.print("That is not an option (Choose a number from the list or -1 to end turn): ");
+                        try {
+                            choice = Integer.parseInt(s.nextLine()) - 1;
+                        } catch (NumberFormatException e) {
+                            choice = 9;
+                        }
+                    } else if (choice != -2) {
+                        if (player.getActiveCard(choice).getEnergyCost() <= player.getPlayerEnergy()) {
+                            energyCheck = true;
+                        } else {
+                            System.out.print("Card costs too much energy (Choose a number from the list or -1 to end turn): ");
+                            try {
+                                choice = Integer.parseInt(s.nextLine()) - 1;
+                            } catch (NumberFormatException e) {
+                                choice = 9;
+                            }
+                        }
+                    } else {
+                        energyCheck = true;
+                    }
+
+                }
+                System.out.println("-------------------");
+                if (choice == -2) { //might need to get rid of the break statement
+                    System.out.println("You end your turn");
+                    break;
+                }
+
+                String option1 = "1) " + enemy1.toString();
+                String option2 = "2) " + enemy2.toString();
+                int chooseEnemy = 0;
+                if (enemy1.getHealthPoints() <= 0) {
+                    option1 = "1) DEAD";
+                }
+                if (enemy2.getHealthPoints() <= 0) {
+                    option2 = "2) DEAD";
+                }
+                if (player.getPlayerHand().get(choice).getCanTarget().equals("yes")) {
+                    System.out.println("Pick a target:" +
+                            "\n" + option1 +
+                            "\n" + option2);
+                    System.out.print("Who would you like to attack (Pick the number of the living enemy you want to attack): ");
+                    try {
+                        chooseEnemy = Integer.parseInt(s.nextLine());
+                    } catch (NumberFormatException e) {
+                        chooseEnemy = 9;
+                    }
+                    while (!InputValidation.integerValidate(1, 2, chooseEnemy) || (chooseEnemy == 1 && option1.equals("DEAD")) || (chooseEnemy == 2 && option2.equals("DEAD"))) {
+                        if (!InputValidation.integerValidate(1, 2, chooseEnemy)) {
+                            System.out.print("That is not an option (Pick the number of the living enemy you want to attack): ");
+                            try {
+                                chooseEnemy = Integer.parseInt(s.nextLine());
+                            } catch (NumberFormatException e) {
+                                chooseEnemy = 9;
+                            }
+                        } else {
+                            System.out.print("That enemy is dead (Pick the number of the living enemy you want to attack): ");
+                            try {
+                                choice = Integer.parseInt(s.nextLine()) - 1;
+                            } catch (NumberFormatException e) {
+                                choice = 9;
+                            }
+                        }
+                    }
+                }
+                if (chooseEnemy == 1 || player.getPlayerHand().get(choice).getCanTarget().equals("no")) {
+                    playerTurn(choice, enemy1);
+                }
+                if (chooseEnemy == 2) {
+                    playerTurn(choice, enemy2);
+                }
+
+
+
+
+            }
+            for (int i = 0; i < player.getPlayerHand().size(); i++) { //Sends the players remaining hand to discard
+                player.handToDiscard(i);
+            }
+
+            player.doStatusEffects();
+            System.out.print(player.statusPrint());
+            player.resetStatusEffects();
+
+            enemyTurn(enemy1);
+            enemyTurn(enemy2);
+
+        }
+        System.out.println("-------------------");
+        if (player.getPlayerHealth() > 0) {
+            selectCard();
+        }
+    }
+    public static void badRoom3() {
+        boolean energyCheck;
+        Scanner s = new Scanner(System.in);
+        int choice = 0;
+        enemy1 = new EnemyCreator();
+        enemy2 = new EnemyCreator();
+        enemy3 = new EnemyCreator();
+        System.out.println("You enter a room with a " + enemy1.getName() + " and " + enemy2.getName() + " and " + enemy3.getName());
+
+
+        while (enemy1.getHealthPoints() > 0 && player.getPlayerHealth() > 0 && enemy2.getHealthPoints() > 0 && enemy3.getHealthPoints() > 0) { //entire room is in this while loop that goes between enemy and player
+            player.changePlayerEnergy(player.getPlayerStartEnergy());
+            player.deckToHand();
+            player.changePlayerShield(-player.getShield());
+
+
+            while (!player.getPlayerHand().isEmpty() && enemy1.getHealthPoints() > 0 && player.getPlayerHealth() > 0 && enemy2.getHealthPoints() > 0 && enemy3.getHealthPoints() > 0) { //loop that holds the players turn
+                energyCheck = false;
+
+                System.out.println("-------------------");
+                if (enemy1.getHealthPoints() > 0) {
+                    System.out.println(enemy1.toString());
+                }
+                if (enemy2.getHealthPoints() > 0) {
+                    System.out.println(enemy2.toString());
+                }
+                if (enemy3.getHealthPoints() > 0) {
+                    System.out.println(enemy3.toString());
+                }
+                System.out.println("-------------------");
+                System.out.println(player.toString());
+                System.out.println("-------------------");
+                System.out.println(player.displayHand());
+                System.out.print("Which attack would you like to do (Choose a number from the list or -1 to end turn): ");
+                try {
+                    choice = Integer.parseInt(s.nextLine()) - 1;
+                } catch (NumberFormatException e) {
+                    choice = 9;
+                }
+
+                if (InputValidation.integerValidate(0, (player.getPlayerHand().size() - 1), -2, choice)) {
+                    if (choice == -2 || player.getActiveCard(choice).getEnergyCost() < player.getPlayerEnergy()) {
+                        energyCheck = true;
+                    }
+                }
+
+                while (!InputValidation.integerValidate(0, (player.getPlayerHand().size() - 1), -2, choice) || energyCheck == false) {
+                    if (!InputValidation.integerValidate(0, (player.getPlayerHand().size() - 1), -2, choice)) {
+                        System.out.print("That is not an option (Choose a number from the list or -1 to end turn): ");
+                        try {
+                            choice = Integer.parseInt(s.nextLine()) - 1;
+                        } catch (NumberFormatException e) {
+                            choice = 9;
+                        }
+                    } else if (choice != -2) {
+                        if (player.getActiveCard(choice).getEnergyCost() <= player.getPlayerEnergy()) {
+                            energyCheck = true;
+                        } else {
+                            System.out.print("Card costs too much energy (Choose a number from the list or -1 to end turn): ");
+                            try {
+                                choice = Integer.parseInt(s.nextLine()) - 1;
+                            } catch (NumberFormatException e) {
+                                choice = 9;
+                            }
+                        }
+                    } else {
+                        energyCheck = true;
+                    }
+
+                }
+                System.out.println("-------------------");
+                if (choice == -2) { //might need to get rid of the break statement
+                    System.out.println("You end your turn");
+                    break;
+                }
+
+                String option1 = "1) " + enemy1.toString();
+                String option2 = "2) " + enemy2.toString();
+                String option3 = "3) " + enemy3.toString();
+                int chooseEnemy = 0;
+                if (enemy1.getHealthPoints() <= 0) {
+                    option1 = "1) DEAD";
+                }
+                if (enemy2.getHealthPoints() <= 0) {
+                    option2 = "2) DEAD";
+                }
+                if (enemy3.getHealthPoints() <= 0) {
+                    option3 = "3) DEAD";
+                }
+                if (player.getPlayerHand().get(choice).getCanTarget().equals("yes")) {
+                    System.out.println("Pick a target:" +
+                            "\n" + option1 +
+                            "\n" + option2 +
+                            "\n" + option3);
+                    System.out.print("Who would you like to attack (Pick the number of the living enemy you want to attack): ");
+                    try {
+                        chooseEnemy = Integer.parseInt(s.nextLine());
+                    } catch (NumberFormatException e) {
+                        chooseEnemy = 9;
+                    }
+                    while (!InputValidation.integerValidate(1, 3, chooseEnemy) || (chooseEnemy == 1 && option1.equals("DEAD")) || (chooseEnemy == 2 && option2.equals("DEAD")) || (chooseEnemy == 3 && option1.equals("DEAD"))) {
+                        if (!InputValidation.integerValidate(1, 2, chooseEnemy)) {
+                            System.out.print("That is not an option (Pick the number of the living enemy you want to attack): ");
+                            try {
+                                chooseEnemy = Integer.parseInt(s.nextLine());
+                            } catch (NumberFormatException e) {
+                                chooseEnemy = 9;
+                            }
+                        } else {
+                            System.out.print("That enemy is dead (Pick the number of the living enemy you want to attack): ");
+                            try {
+                                choice = Integer.parseInt(s.nextLine()) - 1;
+                            } catch (NumberFormatException e) {
+                                choice = 9;
+                            }
+                        }
+                    }
+                }
+                if (chooseEnemy == 1 || player.getPlayerHand().get(choice).getCanTarget().equals("no")) {
+                    playerTurn(choice, enemy1);
+                }
+                if (chooseEnemy == 2) {
+                    playerTurn(choice, enemy2);
+                }
+                if (chooseEnemy == 3) {
+                    playerTurn(choice, enemy3);
+                }
+
+
+
+
+            }
+            for (int i = 0; i < player.getPlayerHand().size(); i++) { //Sends the players remaining hand to discard
+                player.handToDiscard(i);
+            }
+
+            player.doStatusEffects();
+            System.out.print(player.statusPrint());
+            player.resetStatusEffects();
+
+            enemyTurn(enemy1);
+            enemyTurn(enemy2);
+
+        }
+        System.out.println("-------------------");
+        if (player.getPlayerHealth() > 0) {
+            selectCard();
+        }
+    }
     public static void goodRoom1() {
         System.out.println();
         int choice;
@@ -385,7 +707,6 @@ public class DungeonCrawlerRunner {
             }
         }
     }
-
     public static void goodRoom2() {
         System.out.println();
         int choice;
@@ -553,7 +874,7 @@ public class DungeonCrawlerRunner {
 
             if (boss.getHealthPoints() > 0 && !boss.freezeTrue()) {
                 boss.getAttack();
-                System.out.println(boss.enemyAttackPrint());
+                System.out.println(boss.enemyAttackPrint(0));
 
                 if (boss.enemyAttackIsAttack()) {
                     int damage = boss.getEffectiveness();
