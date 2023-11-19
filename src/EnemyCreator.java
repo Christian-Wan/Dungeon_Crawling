@@ -17,7 +17,7 @@ public class EnemyCreator {
     private int shield = 0;
 
     public EnemyCreator() {
-        File f = new File("enemies/enemy1");
+        File f = new File("enemies/enemy" + (int) ((Math.random() * 4) + 1));
         Scanner s = null;
         try {
             s = new Scanner(f);
@@ -65,11 +65,12 @@ public class EnemyCreator {
         statusEffects.put("Poison", 0);
         statusEffects.put("Strength", 0);
         statusEffects.put("Self", 0);
+        statusEffects.put("Mark", 0);
         s.close();
     }
 
     public EnemyCreator(String check) {
-        File f = new File("bosses/boss1");
+        File f = new File("bosses/boss" + (int) (Math.random() * 2) + 1);
         Scanner s = null;
         try {
             s = new Scanner(f);
@@ -117,6 +118,7 @@ public class EnemyCreator {
         statusEffects.put("Poison", 0);
         statusEffects.put("Strength", 0);
         statusEffects.put("Self", 0);
+        statusEffects.put("Mark", 0);
         s.close();
     }
     public void changeHealth(int damage) {
@@ -299,6 +301,7 @@ public class EnemyCreator {
         statusEffects.replace("Burn", statusEffects.get("Burn"), 0);
         statusEffects.replace("Freeze", statusEffects.get("Freeze"), 0);
         statusEffects.replace("Bleed", statusEffects.get("Bleed"), 0);
+        statusEffects.replace("Mark", statusEffects.get("Mark"), statusEffects.get("Mark") - 1);
     }
     public void addStatusEffect(String status, int amount) {
         statusEffects.replace(status, statusEffects.get(status), statusEffects.get(status) + amount);
@@ -318,5 +321,8 @@ public class EnemyCreator {
 
     public boolean isAlive() {
         return healthPoints > 0;
+    }
+    public boolean markTrue() {
+        return statusEffects.get("Mark") > 0;
     }
 }

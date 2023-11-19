@@ -159,6 +159,9 @@ public class DungeonCrawlerRunner {
             if (player.bleedTrue()) {
                 damage = (int) (damage * .75);
             }
+            if (enemy.markTrue()){
+                damage = (int) (damage * 1.5);
+            }
             if (player.getName().equals("Rouge") && Math.random() * 100 < (20 + player.getFocus() * 10)) { //20% chance for the rouge class to crit whenever they attack
                 System.out.println("You critically hit the enemy!");
                 damage *= 2;
