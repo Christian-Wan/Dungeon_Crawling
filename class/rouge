@@ -3,5 +3,5 @@ Rouge
 70
 5
 5
-stab, stab, stab, stab, block, block, block, block, focusup, mark
-quickattack, focusup, mark
+stab, stab, stab, stab, block, block, block, block, focusup, mark, poisonjab
+quickattack, focusup, mark, firstaid, analyze, sneakattack, poisonjab, truestrike, truestrike

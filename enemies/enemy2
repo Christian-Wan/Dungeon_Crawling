@@ -2,5 +2,5 @@ Zombie
 75
 bit 11, scratched 6
 bit Strength 3, scratched Poison 5
-heal 20
-heal none 0
+heals 20
+heals none 0
