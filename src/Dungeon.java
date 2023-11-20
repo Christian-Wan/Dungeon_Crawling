@@ -3,13 +3,20 @@ import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Objects;
 import java.util.Scanner;
-
+/*
+* The Dungeon class represents the map that the player walks through. It uses a 2D array and places the player on a coordinate
+* on that 2D array. The array has numbers that represent the type of room that room is
+* */
 public class Dungeon {
 
     int playerRow = 4;
     int playerColumn = 4;
     int[][] dungeonMap = new int[6][6];
-
+    /*
+    * constructor for the dungeon class that takes the parameter to look for a file to scan and put inside of instance variable dungeonMap
+    *
+    * @param chooser represents the users choice of map
+    * */
     public Dungeon(String chooser) {
         File f = new File("maps/map" + chooser);
         Scanner s = null;
@@ -30,6 +37,10 @@ public class Dungeon {
         }
         s.close();
     }
+    /*
+     * constructor for the dungeon class that looks for a file to scan and put inside of instance variable dungeonMap
+     * this constructor randomly chooses out of the three possible maps instead of using user input
+     * */
     public Dungeon() {
         int chooser = (int) (Math.random() * 3) + 1;
 
@@ -52,7 +63,11 @@ public class Dungeon {
         }
         s.close();
     }
-
+    /*
+    * checks if the player can move north
+    *
+    * @returns a boolean that represents if the player can move north or not
+    * */
     public boolean moveNorth() {
         boolean check = true;
         if (dungeonMap[playerRow - 1][playerColumn] == 0) {
@@ -60,6 +75,11 @@ public class Dungeon {
         }
         return check;
     }
+    /*
+     * checks if the player can move east
+     *
+     * @returns a boolean that represents if the player can move east or not
+     * */
     public boolean moveEast() {
         boolean check = true;
         if (dungeonMap[playerRow][playerColumn + 1] == 0) {
@@ -67,6 +87,11 @@ public class Dungeon {
         }
         return check;
     }
+    /*
+     * checks if the player can move south
+     *
+     * @returns a boolean that represents if the player can move south or not
+     * */
     public boolean moveSouth() {
         boolean check = true;
         if (dungeonMap[playerRow + 1][playerColumn] == 0) {
@@ -74,6 +99,11 @@ public class Dungeon {
         }
         return check;
     }
+    /*
+     * checks if the player can move west
+     *
+     * @returns a boolean that represents if the player can move west or not
+     * */
     public boolean moveWest() {
         boolean check = true;
         if (dungeonMap[playerRow][playerColumn - 1] == 0) {
@@ -81,7 +111,13 @@ public class Dungeon {
         }
         return check;
     }
-
+    /*
+    * checks if player can move to a desired direction and if they can then move them and set their previous room as seen
+    * also returning a string indicating where the player went
+    *
+    * @param movement represents the users choice in direction
+    *
+    * @return a sentence that describes what happens to the player after the player chooses a direction*/
     public String movePlayer(String movement) {
         movement = movement.toLowerCase();
         String[] allow = {"n", "e", "s", "w"};
@@ -113,7 +149,10 @@ public class Dungeon {
         return "You walk into a wall";
     }
 
-
+    /*
+    * checks what type of room the player is currently in and returns a string accordingly
+    *
+    * @returns a string that describes the room the player is currently in*/
     public String runRoom() {
         if (dungeonMap[playerRow][playerColumn] == 2) {
             return "Bad";

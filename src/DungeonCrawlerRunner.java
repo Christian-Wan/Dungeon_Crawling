@@ -12,7 +12,7 @@ public class DungeonCrawlerRunner {
         Dungeon play; //Dungeon object
 
 
-        System.out.println("Welcome to Light and Lighter");
+        System.out.println("Welcome to Dark Dungeon");
         System.out.println("Here is an overview: " +
                 "\n- This game is a Deck Building Dungeon crawler" +
                 "\n- The game ends when either you or the boss dies" +
@@ -103,23 +103,22 @@ public class DungeonCrawlerRunner {
         }
     }
 
-    static Player player;
-    static EnemyCreator enemy1 = new EnemyCreator();
-    static EnemyCreator enemy2 = new EnemyCreator();
-    static EnemyCreator enemy3 = new EnemyCreator();
-    static EnemyCreator boss = new EnemyCreator("");
-
-    public static void doWhatIWant() {
-        System.out.println(enemy1.getDefenseMoveTraits());
-        enemy1.getAttack();
-        System.out.println(Arrays.toString(enemy1.getCurrentAttack().keySet().toArray()).substring(1, Arrays.toString(enemy1.getCurrentAttack().keySet().toArray()).length() - 1));
-        System.out.println(enemy1.getDefenseTraitEffectiveness());
-    }
-
+    static Player player; //The player
+    static EnemyCreator enemy1 = new EnemyCreator(); //Possible enemies
+    static EnemyCreator enemy2 = new EnemyCreator(); //Possible enemies
+    static EnemyCreator enemy3 = new EnemyCreator();//Possible enemies
+    static EnemyCreator boss = new EnemyCreator(""); //The boss the player has to fight
+    /*
+    * Takes a user input and takes that to create a new player object and set the variable player as that object
+    *
+    * @param choice represents the users choice of what they want to make the player object*/
     public static void importPlayer(String choice) {
         player = new Player(choice);
     }
-
+    /*
+    * Presents 3 options of cards from the players obtainable cards list
+    * the player can choose to add these cards to their deck or skip adding a card
+    * */
     private static void selectCard() {
         Scanner s = new Scanner(System.in);
         int choice = 0;
@@ -160,6 +159,14 @@ public class DungeonCrawlerRunner {
             player.obtainableToDeck(card3);
         }
     }
+    /*
+    * Simulates the players turn for fights against enemies in badRoom1, badRoom2, badRoom3, and bossRoom
+    * uses parameter choice to select the card that the player will use and parameter enemy to select the
+    * enemy the player will attack
+    *
+    * @param choice represents the users choice in card from the players hand they will use
+    * @param enemy represents the enemy that the user wants to attack using their card
+    * */
     private static void playerTurn(int choice, EnemyCreator enemy) {
         System.out.println("-------------------");
         int damage = player.getPlayerHand().get(choice).getEffectiveness();
@@ -231,6 +238,12 @@ public class DungeonCrawlerRunner {
         player.changePlayerEnergy(player.getPlayerEnergy() - player.getActiveCard(choice).getEnergyCost()); // decreases the players energy by the amount the card costs
         player.handToDiscard(choice);
     }
+    /*
+    * Simulates the enemies turn by selecting a random attack that they have and using it to either defend
+    * or attack they player
+    *
+    * @param enemy represents which enemy is currently performing their turn
+    * */
     private static void enemyTurn(EnemyCreator enemy) {
         enemy.doStatusEffects();
         System.out.print(enemy.statusPrint());//
@@ -298,7 +311,13 @@ public class DungeonCrawlerRunner {
         }
         enemy.resetStatusEffects();
     }
-    public static void badRoom1() {
+    /*
+    * Simulates a bad room when the player walks into one.
+    * Prints out the health, shield and status of both player and enemy and goes in a loop until either the player or the enemy is dead
+    * if the player beats the enemy the player can select a card using the selectCard() method.
+    * This room has 1 enemy
+    * */
+    private static void badRoom1() {
         boolean energyCheck;
         Scanner s = new Scanner(System.in);
         int choice = 0;
@@ -390,7 +409,13 @@ public class DungeonCrawlerRunner {
             selectCard();
         }
     }
-    public static void badRoom2() {
+    /*
+     * Simulates a bad room when the player walks into one.
+     * Prints out the health, shield and status of both player and enemy and goes in a loop until either the player or the enemy is dead
+     * if the player beats the enemies the player can select a card using the selectCard() method.
+     * This room has 2 enemies
+     * */
+    private static void badRoom2() {
         int deathCounter1 = 0;
         int deathCounter2 = 0;
         boolean energyCheck;
@@ -539,7 +564,13 @@ public class DungeonCrawlerRunner {
             selectCard();
         }
     }
-    public static void badRoom3() {
+    /*
+     * Simulates a bad room when the player walks into one.
+     * Prints out the health, shield and status of both player and enemy and goes in a loop until either the player or the enemy is dead
+     * if the player beats the enemies the player can select a card using the selectCard() method.
+     * This room has 3 enemies
+     * */
+    private static void badRoom3() {
         int deathCounter1 = 0;
         int deathCounter2 = 0;
         int deathCounter3 = 0;
@@ -707,7 +738,10 @@ public class DungeonCrawlerRunner {
             selectCard();
         }
     }
-    public static void goodRoom1() {
+    /*
+    * Simulate when the player walks into a good room. This room allows the player to pick any card
+    * that is in their obtainable cards list or leave*/
+    private static void goodRoom1() {
         System.out.println();
         int choice;
         Scanner s = new Scanner(System.in);
@@ -766,7 +800,8 @@ public class DungeonCrawlerRunner {
         System.out.println("----------------------------------");
 
     }
-    public static void goodRoom2() {
+    /*Simulate when the player walks into a goo room. This room allows the player to heal 25% of their max HP or leave*/
+    private static void goodRoom2() {
         System.out.println();
         int choice;
         int heal = (int) (player.getPlayerMaxHealth() * .25);
@@ -805,13 +840,17 @@ public class DungeonCrawlerRunner {
         }
         System.out.println("----------------------------------");
     }
-
-    public static void bossRoom() {
+    /*
+     * Simulates the final boss room.
+     * Prints out the health, shield and status of both player and enemy and goes in a loop until either the player or the enemy is dead
+     * */
+    private static void bossRoom() {
         boolean energyCheck;
         Scanner s = new Scanner(System.in);
         int choice = 0;
         boss = new EnemyCreator("");
         System.out.println("You enter a room with a " + boss.getName());
+        player.fullResetStatusEffects();
 
 
         while (boss.getHealthPoints() > 0 && player.getPlayerHealth() > 0) { //entire room is in this while loop that goes between enemy and player
@@ -820,7 +859,7 @@ public class DungeonCrawlerRunner {
             player.changePlayerShield(-player.getShield());
 
 
-            while (!player.getPlayerHand().isEmpty() && boss.getHealthPoints() > 0 && player.getPlayerHealth() > 0) { //loop that holds the players turn
+            while (boss.getHealthPoints() > 0 && player.getPlayerHealth() > 0) { //loop that holds the players turn
                 energyCheck = false;
 
                 System.out.println("-------------------");
@@ -866,8 +905,8 @@ public class DungeonCrawlerRunner {
                     }
 
                 }
-                System.out.println("-------------------");
-                if (choice == -2) { //might need to get rid of the break statement
+                if (choice == -2) { //didn't have time to find another solution
+                    System.out.println("-------------------");
                     System.out.println("You end your turn");
                     break;
                 }
@@ -882,18 +921,15 @@ public class DungeonCrawlerRunner {
                 player.handToDiscard(i);
             }
 
-            player.doStatusEffects();
-            System.out.print(player.statusPrint());
-            player.resetStatusEffects();
+            if (boss.isAlive()) {
+                player.doStatusEffects();
+                System.out.print(player.statusPrint());
+                player.resetStatusEffects();
+            }
+            enemyTurn(enemy1);
 
-            enemyTurn(boss);
 
 
-
-        }
-        System.out.println("-------------------");
-        if (player.getPlayerHealth() > 0) {
-            selectCard();
         }
     }
 }
