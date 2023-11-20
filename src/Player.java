@@ -165,7 +165,7 @@ public class Player {
         if (attackType.equals("attack")) {
             result = "You hit " + enemyName + " for " + damage + " damage!";
         }
-        else if (attackType.equals("defend/heal")) {
+        else if (attackType.equals("defense/heal")) {
             result = "You healed for " + damage + " HP!";
         }
         else {

@@ -12,15 +12,23 @@ public class DungeonCrawlerRunner {
         Dungeon play; //Dungeon object
 
 
-        System.out.println("Welcome to Unique Game Title");
+        System.out.println("Welcome to Light and Lighter");
         System.out.println("Here is an overview: " +
                 "\n- This game is a Deck Building Dungeon crawler" +
                 "\n- The game ends when either you or the boss dies" +
                 "\n- When the game asks for input available inputs are explained in ()" +
-                "\n- Currently only wizard works\n");
+                "\n- The severity of a status effect is indicated by the number in ()" +
+                "\n" +
+                "\nStatus Effects:" +
+                "\nBurn - Deal damage for number indicated and decrease shielding by 25%" +
+                "\nBleed - Deal damage for number indicated and decrease damage by 25%" +
+                "\nFreeze - Skip the next turn" +
+                "\nPoison - Deal damage for number indicated and persists to next turn" +
+                "\nStrength - Increase damage dealt by cards by number indicated" +
+                "\nMark - Increase damage taken by 50% for the amount of turns indicated by the number");
 
         System.out.println(
-                          "Pick a class:" +
+                          "\nPick a class:" +
                         "\nBarbarian - Deals heavy damage but ends up hurting himself in the process" +
                         "\nWizard - Applies ailments to the enemy while defending" +
                         "\nRouge - Dodges attacks and strikes the enemy at their weak points");
@@ -153,6 +161,7 @@ public class DungeonCrawlerRunner {
         }
     }
     private static void playerTurn(int choice, EnemyCreator enemy) {
+        System.out.println("-------------------");
         int damage = player.getPlayerHand().get(choice).getEffectiveness();
         if (player.attackType(choice).equals("attack")) {
             damage += player.getStrength();
@@ -199,6 +208,12 @@ public class DungeonCrawlerRunner {
             System.out.println(player.attackDisplay(enemy.getName(), damage, player.attackType(choice)));
         } else {
             System.out.println("You used " + player.getPlayerHand().get(choice).getName());
+            for (int i = 0; i < player.getPlayerHand().get(choice).getTraits().size(); i++) {
+                if (player.getPlayerHand().get(choice).getTraitName(i).equals("Self")) {
+                    System.out.println("You hurt yourself for " + player.getPlayerHand().get(choice).getTraitEffectiveness(i) + " damage");
+                    player.changePlayerHealth(player.getPlayerHand().get(choice).getTraitEffectiveness(i));
+                }
+            }
         }
 
         if (!player.getPlayerHand().get(choice).getTraitName(0).equals("none")) { //apply status effects to self or enemy
@@ -206,7 +221,8 @@ public class DungeonCrawlerRunner {
                 if (player.getPlayerHand().get(choice).getTraitName(i).equals("Strength") || player.getPlayerHand().get(choice).getTraitName(i).equals("Focus")) {
                     System.out.println(player.applyStatusPrint("yourself", player.getPlayerHand().get(choice).getTraitName(i), player.getPlayerHand().get(choice).getTraitEffectiveness(i)));
                     player.addStatusEffect(player.getPlayerHand().get(choice).getTraitName(i), player.getPlayerHand().get(choice).getTraitEffectiveness(i));
-                } else {
+                }
+                else if (!player.getPlayerHand().get(choice).getTraitName(i).equals("Self")){
                     System.out.println(player.applyStatusPrint(enemy.getName(), player.getPlayerHand().get(choice).getTraitName(i), player.getPlayerHand().get(choice).getTraitEffectiveness(i)));
                     enemy.addStatusEffect(player.getPlayerHand().get(choice).getTraitName(i), player.getPlayerHand().get(choice).getTraitEffectiveness(i));
                 }
@@ -288,6 +304,7 @@ public class DungeonCrawlerRunner {
         int choice = 0;
         enemy1 = new EnemyCreator();
         System.out.println("You enter a room with a " + enemy1.getName());
+        player.fullResetStatusEffects();
 
 
         while (enemy1.getHealthPoints() > 0 && player.getPlayerHealth() > 0) { //entire room is in this while loop that goes between enemy and player
@@ -296,7 +313,7 @@ public class DungeonCrawlerRunner {
             player.changePlayerShield(-player.getShield());
 
 
-            while (!player.getPlayerHand().isEmpty() && enemy1.getHealthPoints() > 0 && player.getPlayerHealth() > 0) { //loop that holds the players turn
+            while (enemy1.getHealthPoints() > 0 && player.getPlayerHealth() > 0) { //loop that holds the players turn
                 energyCheck = false;
 
                 System.out.println("-------------------");
@@ -342,8 +359,8 @@ public class DungeonCrawlerRunner {
                     }
 
                 }
-                System.out.println("-------------------");
-                if (choice == -2) { //might need to get rid of the break statement
+                if (choice == -2) { //didn't have time to find another solution
+                    System.out.println("-------------------");
                     System.out.println("You end your turn");
                     break;
                 }
@@ -374,21 +391,24 @@ public class DungeonCrawlerRunner {
         }
     }
     public static void badRoom2() {
+        int deathCounter1 = 0;
+        int deathCounter2 = 0;
         boolean energyCheck;
         Scanner s = new Scanner(System.in);
         int choice = 0;
         enemy1 = new EnemyCreator();
         enemy2 = new EnemyCreator();
         System.out.println("You enter a room with a " + enemy1.getName() + " and " + enemy2.getName());
+        player.fullResetStatusEffects();
 
 
-        while (enemy1.getHealthPoints() > 0 && player.getPlayerHealth() > 0 && enemy2.getHealthPoints() > 0) { //entire room is in this while loop that goes between enemy and player
+        while (player.getPlayerHealth() > 0 && (enemy1.getHealthPoints() > 0 || enemy2.getHealthPoints() > 0)) { //entire room is in this while loop that goes between enemy and player
             player.changePlayerEnergy(player.getPlayerStartEnergy());
             player.deckToHand();
             player.changePlayerShield(-player.getShield());
 
 
-            while (!player.getPlayerHand().isEmpty() && enemy1.getHealthPoints() > 0 && player.getPlayerHealth() > 0 && enemy2.getHealthPoints() > 0) { //loop that holds the players turn
+            while (player.getPlayerHealth() > 0 && (enemy1.getHealthPoints() > 0 || enemy2.getHealthPoints() > 0)) { //loop that holds the players turn
                 energyCheck = false;
 
                 System.out.println("-------------------");
@@ -439,8 +459,8 @@ public class DungeonCrawlerRunner {
                     }
 
                 }
-                System.out.println("-------------------");
-                if (choice == -2) { //might need to get rid of the break statement
+                if (choice == -2) { //didn't have time to find another solution
+                    System.out.println("-------------------");
                     System.out.println("You end your turn");
                     break;
                 }
@@ -464,7 +484,7 @@ public class DungeonCrawlerRunner {
                     } catch (NumberFormatException e) {
                         chooseEnemy = 9;
                     }
-                    while (!InputValidation.integerValidate(1, 2, chooseEnemy) || (chooseEnemy == 1 && option1.equals("DEAD")) || (chooseEnemy == 2 && option2.equals("DEAD"))) {
+                    while (!InputValidation.integerValidate(1, 2, chooseEnemy) || (chooseEnemy == 1 && option1.equals("1) DEAD")) || (chooseEnemy == 2 && option2.equals("2) DEAD"))) {
                         if (!InputValidation.integerValidate(1, 2, chooseEnemy)) {
                             System.out.print("That is not an option (Pick the number of the living enemy you want to attack): ");
                             try {
@@ -475,9 +495,9 @@ public class DungeonCrawlerRunner {
                         } else {
                             System.out.print("That enemy is dead (Pick the number of the living enemy you want to attack): ");
                             try {
-                                choice = Integer.parseInt(s.nextLine()) - 1;
+                                chooseEnemy = Integer.parseInt(s.nextLine());
                             } catch (NumberFormatException e) {
-                                choice = 9;
+                                chooseEnemy = 9;
                             }
                         }
                     }
@@ -496,14 +516,23 @@ public class DungeonCrawlerRunner {
             for (int i = 0; i < player.getPlayerHand().size(); i++) { //Sends the players remaining hand to discard
                 player.handToDiscard(i);
             }
-            if (enemy1.isAlive() && enemy2.isAlive()) {
+            if (enemy1.isAlive() || enemy2.isAlive()) {
                 player.doStatusEffects();
                 System.out.print(player.statusPrint());
                 player.resetStatusEffects();
             }
-            enemyTurn(enemy1);
-            enemyTurn(enemy2);
-
+            if (enemy1.isAlive() && deathCounter1 == 0) {
+                enemyTurn(enemy1);
+                if (!enemy1.isAlive()) {
+                    deathCounter1++;
+                }
+            }
+            if (enemy2.isAlive() && deathCounter2 == 0) {
+                enemyTurn(enemy2);
+                if (!enemy2.isAlive()) {
+                    deathCounter2++;
+                }
+            }
         }
         System.out.println("-------------------");
         if (player.getPlayerHealth() > 0) {
@@ -511,6 +540,9 @@ public class DungeonCrawlerRunner {
         }
     }
     public static void badRoom3() {
+        int deathCounter1 = 0;
+        int deathCounter2 = 0;
+        int deathCounter3 = 0;
         boolean energyCheck;
         Scanner s = new Scanner(System.in);
         int choice = 0;
@@ -518,15 +550,16 @@ public class DungeonCrawlerRunner {
         enemy2 = new EnemyCreator();
         enemy3 = new EnemyCreator();
         System.out.println("You enter a room with a " + enemy1.getName() + " and " + enemy2.getName() + " and " + enemy3.getName());
+        player.fullResetStatusEffects();
 
 
-        while (enemy1.getHealthPoints() > 0 && player.getPlayerHealth() > 0 && enemy2.getHealthPoints() > 0 && enemy3.getHealthPoints() > 0) { //entire room is in this while loop that goes between enemy and player
+        while (player.getPlayerHealth() > 0 && enemy1.getHealthPoints() > 0 || enemy2.getHealthPoints() > 0 || enemy3.getHealthPoints() > 0) { //entire room is in this while loop that goes between enemy and player
             player.changePlayerEnergy(player.getPlayerStartEnergy());
             player.deckToHand();
             player.changePlayerShield(-player.getShield());
 
 
-            while (!player.getPlayerHand().isEmpty() && enemy1.getHealthPoints() > 0 && player.getPlayerHealth() > 0 && enemy2.getHealthPoints() > 0 && enemy3.getHealthPoints() > 0) { //loop that holds the players turn
+            while (player.getPlayerHealth() > 0 && (enemy1.getHealthPoints() > 0 || enemy2.getHealthPoints() > 0 || enemy3.getHealthPoints() > 0)) { //loop that holds the players turn
                 energyCheck = false;
 
                 System.out.println("-------------------");
@@ -580,8 +613,8 @@ public class DungeonCrawlerRunner {
                     }
 
                 }
-                System.out.println("-------------------");
-                if (choice == -2) { //might need to get rid of the break statement
+                if (choice == -2) { //didn't have time to find another solution
+                    System.out.println("-------------------");
                     System.out.println("You end your turn");
                     break;
                 }
@@ -610,7 +643,7 @@ public class DungeonCrawlerRunner {
                     } catch (NumberFormatException e) {
                         chooseEnemy = 9;
                     }
-                    while (!InputValidation.integerValidate(1, 3, chooseEnemy) || (chooseEnemy == 1 && option1.equals("DEAD")) || (chooseEnemy == 2 && option2.equals("DEAD")) || (chooseEnemy == 3 && option1.equals("DEAD"))) {
+                    while (!InputValidation.integerValidate(1, 3, chooseEnemy) || (chooseEnemy == 1 && option1.equals("1) DEAD")) || (chooseEnemy == 2 && option2.equals("2) DEAD")) || (chooseEnemy == 3 && option1.equals("3) DEAD"))) {
                         if (!InputValidation.integerValidate(1, 2, chooseEnemy)) {
                             System.out.print("That is not an option (Pick the number of the living enemy you want to attack): ");
                             try {
@@ -621,9 +654,9 @@ public class DungeonCrawlerRunner {
                         } else {
                             System.out.print("That enemy is dead (Pick the number of the living enemy you want to attack): ");
                             try {
-                                choice = Integer.parseInt(s.nextLine()) - 1;
+                                chooseEnemy = Integer.parseInt(s.nextLine());
                             } catch (NumberFormatException e) {
-                                choice = 9;
+                                chooseEnemy = 9;
                             }
                         }
                     }
@@ -645,14 +678,29 @@ public class DungeonCrawlerRunner {
             for (int i = 0; i < player.getPlayerHand().size(); i++) { //Sends the players remaining hand to discard
                 player.handToDiscard(i);
             }
-            if (enemy1.isAlive() && enemy2.isAlive() && enemy3.isAlive()) {
+            if (enemy1.isAlive() || enemy2.isAlive() || enemy3.isAlive()) {
                 player.doStatusEffects();
                 System.out.print(player.statusPrint());
                 player.resetStatusEffects();
             }
-            enemyTurn(enemy1);
-            enemyTurn(enemy2);
-            enemyTurn(enemy3);
+            if (enemy1.isAlive() && deathCounter1 == 0) {
+                enemyTurn(enemy1);
+                if (!enemy1.isAlive()) {
+                    deathCounter1++;
+                }
+            }
+            if (enemy2.isAlive() && deathCounter2 == 0) {
+                enemyTurn(enemy2);
+                if (!enemy2.isAlive()) {
+                    deathCounter2++;
+                }
+            }
+            if (enemy3.isAlive() && deathCounter3 == 0) {
+                enemyTurn(enemy3);
+                if (!enemy3.isAlive()) {
+                    deathCounter3++;
+                }
+            }
         }
         System.out.println("-------------------");
         if (player.getPlayerHealth() > 0) {
